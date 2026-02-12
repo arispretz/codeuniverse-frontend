@@ -7,9 +7,9 @@
 
 ## 🔗 Associated Repositories
 
-- [Backend (codeuniverse-demo-backend)](https://github.com/arispretz/codeuniverse-demo-backend.git)
-- [AI Assistant (codeuniverse-demo-ai_assistant)](https://github.com/arispretz/codeuniverse-demo-ai_assistant.git)
-- [Codeuniverse-Demo (codeuniverse-demo)](https://github.com/arispretz/codeuniverse-demo.git)
+- [Backend (codeuniverse-backend)](https://github.com/arispretz/codeuniverse-backend.git)
+- [AI Assistant (codeuniverse-ai_assistant)](https://github.com/arispretz/codeuniverse-ai_assistant.git)
+- [Codeuniverse-App (codeuniverse-app)](https://github.com/arispretz/codeuniverse-app.git)
 
 ---
 
