@@ -1,0 +1,187 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="utf-8">
+    <title>JSDoc: Source: src/pages/TeamChatModule.jsx</title>
+
+    <script src="scripts/prettify/prettify.js"> </script>
+    <script src="scripts/prettify/lang-css.js"> </script>
+    <!--[if lt IE 9]>
+      <script src="//html5shiv.googlecode.com/svn/trunk/html5.js"></script>
+    <![endif]-->
+    <link type="text/css" rel="stylesheet" href="styles/prettify-tomorrow.css">
+    <link type="text/css" rel="stylesheet" href="styles/jsdoc-default.css">
+</head>
+
+<body>
+
+<div id="main">
+
+    <h1 class="page-title">Source: src/pages/TeamChatModule.jsx</h1>
+
+    
+
+
+
+    
+    <section>
+        <article>
+            <pre class="prettyprint source linenums"><code>/**
+ * @fileoverview TeamChatModule component.
+ * Provides a real-time chat interface for team collaboration.
+ * Supports markdown formatting and online status indicators.
+ *
+ * @module pages/TeamChatModule
+ */
+
+import React, { useState } from "react";
+import {
+  Container,
+  Typography,
+  Box,
+  TextField,
+  IconButton,
+  Paper,
+  Avatar,
+  List,
+  ListItem,
+  ListItemText,
+  Chip,
+  Divider,
+  ListItemAvatar,
+} from "@mui/material";
+import SendIcon from "@mui/icons-material/Send";
+import FiberManualRecordIcon from "@mui/icons-material/FiberManualRecord";
+import ReactMarkdown from "react-markdown";
+import remarkGfm from "remark-gfm";
+
+/**
+ * TeamChatModule component.
+ * Renders a chat interface with markdown support and online status indicators.
+ *
+ * @function TeamChatModule
+ * @returns {JSX.Element} Team chat module layout
+ */
+const TeamChatModule = () => {
+  const [messages, setMessages] = useState([
+    {
+      id: 1,
+      user: "Camila",
+      online: true,
+      content: "Let’s review PR #42 in a few minutes.",
+    },
+    {
+      id: 2,
+      user: "Leo",
+      online: false,
+      content: "I’ve left my comments on the login handler.",
+    },
+  ]);
+  const [input, setInput] = useState("");
+
+  /**
+   * Sends a new message and updates the message list.
+   */
+  const handleSend = () => {
+    if (input.trim()) {
+      setMessages((prev) => [
+        ...prev,
+        {
+          id: Date.now(),
+          user: "You",
+          online: true,
+          content: input,
+        },
+      ]);
+      setInput("");
+    }
+  };
+
+  return (
+    &lt;Container maxWidth="md" sx={{ py: 6 }}>
+      &lt;Typography variant="h5" fontWeight="bold" gutterBottom>
+        💬 Team Chat Module
+      &lt;/Typography>
+      &lt;Typography variant="subtitle1" color="text.secondary">
+        &lt;em>Talk it out. Stay in sync.&lt;/em> Chat instantly with teammates. Collaborate on code, solve blockers, and accelerate decision-making.
+      &lt;/Typography>
+
+      &lt;Divider sx={{ my: 3 }} />
+
+      &lt;Paper elevation={3} sx={{ p: 2, maxHeight: 400, overflowY: "auto" }}>
+        &lt;List>
+          {messages.map((msg) => (
+            &lt;ListItem alignItems="flex-start" key={msg.id}>
+              &lt;ListItemAvatar>
+                &lt;Avatar>{msg.user[0]}&lt;/Avatar>
+              &lt;/ListItemAvatar>
+              &lt;ListItemText
+                primary={
+                  &lt;Box display="flex" alignItems="center" gap={1}>
+                    &lt;Typography fontWeight="bold">{msg.user}&lt;/Typography>
+                    {msg.online &amp;&amp; (
+                      &lt;Chip
+                        icon={
+                          &lt;FiberManualRecordIcon color="success" sx={{ fontSize: 14 }} />
+                        }
+                        label="Online"
+                        size="small"
+                        color="success"
+                      />
+                    )}
+                  &lt;/Box>
+                }
+                secondary={
+                  &lt;Typography variant="body2" sx={{ mt: 1 }}>
+                    &lt;ReactMarkdown remarkPlugins={[remarkGfm]}>
+                      {msg.content}
+                    &lt;/ReactMarkdown>
+                  &lt;/Typography>
+                }
+              />
+            &lt;/ListItem>
+          ))}
+        &lt;/List>
+      &lt;/Paper>
+
+      &lt;Box sx={{ display: "flex", mt: 2 }}>
+        &lt;TextField
+          fullWidth
+          placeholder="Write a message (Markdown supported)"
+          value={input}
+          onChange={(e) => setInput(e.target.value)}
+          multiline
+          minRows={2}
+        />
+        &lt;IconButton onClick={handleSend} color="primary" sx={{ ml: 1 }}>
+          &lt;SendIcon />
+        &lt;/IconButton>
+      &lt;/Box>
+    &lt;/Container>
+  );
+};
+
+export default TeamChatModule;
+</code></pre>
+        </article>
+    </section>
+
+
+
+
+</div>
+
+<nav>
+    <h2><a href="index.html">Home</a></h2><h3>Modules</h3><ul><li><a href="babel.module_config.html">babel.config</a></li><li><a href="eslint.module_config.html">eslint.config</a></li><li><a href="jest.module_config.html">jest.config</a></li><li><a href="jest.module_setup.html">jest.setup</a></li><li><a href="module-ColorModeContext.html">ColorModeContext</a></li><li><a href="module-ThemeWrapper.html">ThemeWrapper</a></li><li><a href="module-auth_roles.html">auth/roles</a></li><li><a href="module-auth_useFirebaseAuth.html">auth/useFirebaseAuth</a></li><li><a href="module-components_AssistantSidebar.html">components/AssistantSidebar</a></li><li><a href="module-components_AuthProviderButton.html">components/AuthProviderButton</a></li><li><a href="module-components_Column.html">components/Column</a></li><li><a href="module-components_ColumnDroppable.html">components/ColumnDroppable</a></li><li><a href="module-components_EditorPanel.html">components/EditorPanel</a></li><li><a href="module-components_ErrorBoundaryWrapper.html">components/ErrorBoundaryWrapper</a></li><li><a href="module-components_FileTree.html">components/FileTree</a></li><li><a href="module-components_Footer.html">components/Footer</a></li><li><a href="module-components_FormCard.html">components/FormCard</a></li><li><a href="module-components_Input.html">components/Input</a></li><li><a href="module-components_KanbanModals.html">components/KanbanModals</a></li><li><a href="module-components_KanbanOverlay.html">components/KanbanOverlay</a></li><li><a href="module-components_KanbanTaskPreview.html">components/KanbanTaskPreview</a></li><li><a href="module-components_KanbanUtils.html">components/KanbanUtils</a></li><li><a href="module-components_Loading.html">components/Loading</a></li><li><a href="module-components_LocalTaskPanel.html">components/LocalTaskPanel</a></li><li><a href="module-components_Logo.html">components/Logo</a></li><li><a href="module-components_OutputPanel.html">components/OutputPanel</a></li><li><a href="module-components_PersonalTaskPreview.html">components/PersonalTaskPreview</a></li><li><a href="module-components_PersonalTasksPanel.html">components/PersonalTasksPanel</a></li><li><a href="module-components_ProjectSelector.html">components/ProjectSelector</a></li><li><a href="module-components_ProjectSummaryDashboard.html">components/ProjectSummaryDashboard</a></li><li><a href="module-components_RedirectHandler.html">components/RedirectHandler</a></li><li><a href="module-components_SortableTask.html">components/SortableTask</a></li><li><a href="module-components_SuspenseWrapper.html">components/SuspenseWrapper</a></li><li><a href="module-components_TaskCard.html">components/TaskCard</a></li><li><a href="module-components_TaskComments.html">components/TaskComments</a></li><li><a href="module-components_TaskFilters.html">components/TaskFilters</a></li><li><a href="module-components_TerminalPanel.html">components/TerminalPanel</a></li><li><a href="module-components_UserProfilePanel.html">components/UserProfilePanel</a></li><li><a href="module-components_modals_AddKanbanTaskModal.html">components/modals/AddKanbanTaskModal</a></li><li><a href="module-components_modals_AddTaskModal.html">components/modals/AddTaskModal</a></li><li><a href="module-components_modals_DeleteTaskModal.html">components/modals/DeleteTaskModal</a></li><li><a href="module-components_modals_EditLocalTaskModal.html">components/modals/EditLocalTaskModal</a></li><li><a href="module-components_modals_EditTaskModal.html">components/modals/EditTaskModal</a></li><li><a href="module-components_modals_LogoutModal.html">components/modals/LogoutModal</a></li><li><a href="module-components_modals_NewKanbanListModal.html">components/modals/NewKanbanListModal</a></li><li><a href="module-components_modals_NewListModal.html">components/modals/NewListModal</a></li><li><a href="module-components_modals_NewProjectModal.html">components/modals/NewProjectModal</a></li><li><a href="module-components_modals_ProjectDetailModal.html">components/modals/ProjectDetailModal</a></li><li><a href="module-components_modals_TaskDetailModal.html">components/modals/TaskDetailModal</a></li><li><a href="module-components_navbar_NavCategory.html">components/navbar/NavCategory</a></li><li><a href="module-components_navbar_Navbar.html">components/navbar/Navbar</a></li><li><a href="module-components_navbar_navDropdowns.html">components/navbar/navDropdowns</a></li><li><a href="module-context_AuthContext.html">context/AuthContext</a></li><li><a href="module-context_AuthProvider.html">context/AuthProvider</a></li><li><a href="module-context_ModalContext.html">context/ModalContext</a></li><li><a href="module-context_ModalProvider.html">context/ModalProvider</a></li><li><a href="module-firebase_auth.html">firebase/auth</a></li><li><a href="module-firebase_authUtils.html">firebase/authUtils</a></li><li><a href="module-hooks_init.html">hooks/init</a></li><li><a href="module-hooks_useAuth.html">hooks/useAuth</a></li><li><a href="module-hooks_useModal.html">hooks/useModal</a></li><li><a href="module-hooks_useUser.html">hooks/useUser</a></li><li><a href="module-hooks_utilsAuth.html">hooks/utilsAuth</a></li><li><a href="module-layouts_PrivateLayout.html">layouts/PrivateLayout</a></li><li><a href="module-layouts_PublicLayout.html">layouts/PublicLayout</a></li><li><a href="module-layouts_RootLayout.html">layouts/RootLayout</a></li><li><a href="module-main.html">main</a></li><li><a href="module-pages_AdminUserPanel.html">pages/AdminUserPanel</a></li><li><a href="module-pages_CodeReviewPanel.html">pages/CodeReviewPanel</a></li><li><a href="module-pages_CollaborativeCodeEditor.html">pages/CollaborativeCodeEditor</a></li><li><a href="module-pages_Dashboard.html">pages/Dashboard</a></li><li><a href="module-pages_KanbanBoard.html">pages/KanbanBoard</a></li><li><a href="module-pages_LocalTaskBoard.html">pages/LocalTaskBoard</a></li><li><a href="module-pages_MyProjects.html">pages/MyProjects</a></li><li><a href="module-pages_NotFound.html">pages/NotFound</a></li><li><a href="module-pages_PersonalTasksBoard.html">pages/PersonalTasksBoard</a></li><li><a href="module-pages_Profile.html">pages/Profile</a></li><li><a href="module-pages_ProjectDashboard.html">pages/ProjectDashboard</a></li><li><a href="module-pages_ProjectDocumentation.html">pages/ProjectDocumentation</a></li><li><a href="module-pages_ProjectManagementDashboard.html">pages/ProjectManagementDashboard</a></li><li><a href="module-pages_Settings.html">pages/Settings</a></li><li><a href="module-pages_TasksPage.html">pages/TasksPage</a></li><li><a href="module-pages_TeamChatModule.html">pages/TeamChatModule</a></li><li><a href="module-pages_docs_QuickStartGuide.html">pages/docs/QuickStartGuide</a></li><li><a href="module-pages_public__HelpCenter.html">pages/public//HelpCenter</a></li><li><a href="module-pages_public_AIAssistant.html">pages/public/AIAssistant</a></li><li><a href="module-pages_public_Blog.html">pages/public/Blog</a></li><li><a href="module-pages_public_ContactSupport.html">pages/public/ContactSupport</a></li><li><a href="module-pages_public_Features.html">pages/public/Features</a></li><li><a href="module-pages_public_ForDevelopers.html">pages/public/ForDevelopers</a></li><li><a href="module-pages_public_Home.html">pages/public/Home</a></li><li><a href="module-pages_public_PrivacyPolicy.html">pages/public/PrivacyPolicy</a></li><li><a href="module-pages_public_SignIn.html">pages/public/SignIn</a></li><li><a href="module-pages_public_SignUp.html">pages/public/SignUp</a></li><li><a href="module-pages_public_TermsOfService.html">pages/public/TermsOfService</a></li><li><a href="module-pages_public_Testimonials.html">pages/public/Testimonials</a></li><li><a href="module-routes_AdminDashboardRoutes.html">routes/AdminDashboardRoutes</a></li><li><a href="module-routes_AdminRoutes.html">routes/AdminRoutes</a></li><li><a href="module-routes_DashboardRoutes.html">routes/DashboardRoutes</a></li><li><a href="module-routes_IndexRoute.html">routes/IndexRoute</a></li><li><a href="module-routes_ModalRoutes.html">routes/ModalRoutes</a></li><li><a href="module-routes_ProtectedRoute.html">routes/ProtectedRoute</a></li><li><a href="module-routes_PublicRoutes.html">routes/PublicRoutes</a></li><li><a href="module-routes_Routes.html">routes/Routes</a></li><li><a href="module-services_assistantService.html">services/assistantService</a></li><li><a href="module-services_auth_handleLoginRedirect.html">services/auth/handleLoginRedirect</a></li><li><a href="module-services_auth_logoutRequest.html">services/auth/logoutRequest</a></li><li><a href="module-services_auth_roleUtils.html">services/auth/roleUtils</a></li><li><a href="module-services_auth_signInAuth.html">services/auth/signInAuth</a></li><li><a href="module-services_auth_signUpAuth.html">services/auth/signUpAuth</a></li><li><a href="module-services_avatarService.html">services/avatarService</a></li><li><a href="module-services_editorServices.html">services/editorServices</a></li><li><a href="module-services_fileService.html">services/fileService</a></li><li><a href="module-services_kanbanService.html">services/kanbanService</a></li><li><a href="module-services_profileService.html">services/profileService</a></li><li><a href="module-services_projectService.html">services/projectService</a></li><li><a href="module-services_taskService.html">services/taskService</a></li><li><a href="module-services_userService.html">services/userService</a></li><li><a href="module-theme.html">theme</a></li><li><a href="module-utils_authUtils.html">utils/authUtils</a></li><li><a href="module-utils_axiosConfig.html">utils/axiosConfig</a></li><li><a href="module-utils_cleanMentorOutput.html">utils/cleanMentorOutput</a></li><li><a href="module-utils_getRedirectForRole.html">utils/getRedirectForRole</a></li><li><a href="module-utils_monacoConfig.html">utils/monacoConfig</a></li><li><a href="module-utils_syncUserAndRedirect.html">utils/syncUserAndRedirect</a></li><li><a href="module-utils_taskUtils.html">utils/taskUtils</a></li><li><a href="module-utils_userToken.html">utils/userToken</a></li><li><a href="module-views_unauthorized.html">views/unauthorized</a></li><li><a href="vite.module_config.html">vite.config</a></li></ul><h3>Classes</h3><ul><li><a href="-_src_server_project.ts_-ConfiguredProject2.html">ConfiguredProject2</a></li><li><a href="-_src_server_project.ts_-ExternalProject2.html">ExternalProject2</a></li><li><a href="-_src_server_project.ts_-InferredProject2.html">InferredProject2</a></li><li><a href="-_src_server_project.ts_-Project3.html">Project3</a></li><li><a href="-_src_server_project.ts_-_AutoImportProviderProject.html">_AutoImportProviderProject</a></li><li><a href="-_src_services_textChanges.ts_-ChangeTracker.html">ChangeTracker</a></li><li><a href="module-components_ErrorBoundaryWrapper-ErrorBoundaryWrapper.html">ErrorBoundaryWrapper</a></li></ul><h3>Events</h3><ul><li><a href="module-utils_userToken.html#~event:onIdTokenChanged">onIdTokenChanged</a></li></ul><h3>Global</h3><ul><li><a href="global.html#renderWithRouter">renderWithRouter</a></li></ul>
+</nav>
+
+<br class="clear">
+
+<footer>
+    Documentation generated by <a href="https://github.com/jsdoc/jsdoc">JSDoc 4.0.5</a> on Wed Feb 11 2026 23:56:34 GMT+0000 (Coordinated Universal Time)
+</footer>
+
+<script> prettyPrint(); </script>
+<script src="scripts/linenumber.js"> </script>
+</body>
+</html>

@@ -1,0 +1,290 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="utf-8">
+    <title>JSDoc: Source: src/pages/AdminUserPanel.jsx</title>
+
+    <script src="scripts/prettify/prettify.js"> </script>
+    <script src="scripts/prettify/lang-css.js"> </script>
+    <!--[if lt IE 9]>
+      <script src="//html5shiv.googlecode.com/svn/trunk/html5.js"></script>
+    <![endif]-->
+    <link type="text/css" rel="stylesheet" href="styles/prettify-tomorrow.css">
+    <link type="text/css" rel="stylesheet" href="styles/jsdoc-default.css">
+</head>
+
+<body>
+
+<div id="main">
+
+    <h1 class="page-title">Source: src/pages/AdminUserPanel.jsx</h1>
+
+    
+
+
+
+    
+    <section>
+        <article>
+            <pre class="prettyprint source linenums"><code>/**
+ * @fileoverview Simplified Admin User Panel.
+ * Allows administrators to:
+ * - List all users
+ * - Change user roles with confirmation dialogs
+ * - Change user teams with confirmation dialogs
+ *
+ * @module pages/AdminUserPanel
+ */
+
+import React, { useEffect, useState, useCallback } from 'react';
+import PropTypes from 'prop-types';
+import {
+  Table, TableBody, TableCell, TableContainer, TableHead,
+  TableRow, Paper, Select, MenuItem, Typography, Dialog, DialogActions,
+  DialogTitle, Button, TablePagination, Snackbar, Alert
+} from '@mui/material';
+import { getAllUsers, updateUserRole, updateUserTeam } from '../services/userService.js';
+
+const validRoles = ['admin', 'manager', 'developer', 'guest', 'ai_assistant'];
+const validTeams = ['Development Team A', 'Development Team B', 'Marketing Team'];
+
+const AdminUserPanel = ({ idToken, currentUser }) => {
+  const [users, setUsers] = useState([]);
+  const [page, setPage] = useState(0);
+  const [rowsPerPage, setRowsPerPage] = useState(5);
+
+  // Role dialog states
+  const [selectedUser, setSelectedUser] = useState(null);
+  const [newRole, setNewRole] = useState('');
+  const [openDialog, setOpenDialog] = useState(false);
+  const [confirming, setConfirming] = useState(false);
+
+  // Team dialog states
+  const [selectedTeamUser, setSelectedTeamUser] = useState(null);
+  const [newTeam, setNewTeam] = useState('');
+  const [openTeamDialog, setOpenTeamDialog] = useState(false);
+  const [confirmingTeam, setConfirmingTeam] = useState(false);
+
+  // Snackbar
+  const [snack, setSnack] = useState({ open: false, message: '', severity: 'success' });
+
+  const fetchUsers = useCallback(async () => {
+    try {
+      const res = await getAllUsers();
+      setUsers(Array.isArray(res) ? res : []);
+    } catch (err) {
+      console.error('❌ Failed to fetch users:', err);
+      setSnack({ open: true, message: 'Failed to load users', severity: 'error' });
+      setUsers([]);
+    }
+  }, []);
+
+  useEffect(() => {
+    fetchUsers();
+  }, [fetchUsers]);
+
+  // Role change
+  const confirmRoleChange = (user, role) => {
+    if (user.firebaseUid === currentUser?.uid &amp;&amp; role !== 'admin') {
+      setSnack({ open: true, message: 'You cannot remove your own admin role', severity: 'warning' });
+      return;
+    }
+
+    if (!validRoles.includes(role)) {
+      setSnack({ open: true, message: `Invalid role: ${role}`, severity: 'error' });
+      return;
+    }
+
+    setSelectedUser(user);
+    setNewRole(role);
+    setOpenDialog(true);
+  };
+
+  const handleConfirmRole = async () => {
+    setConfirming(true);
+    try {
+      await updateUserRole(selectedUser.firebaseUid, newRole);
+      setSnack({ open: true, message: 'Role updated successfully', severity: 'success' });
+      setOpenDialog(false);
+      fetchUsers();
+    } catch (err) {
+      const msg = err.response?.data?.error || 'Failed to update role';
+      setSnack({ open: true, message: msg, severity: 'error' });
+    } finally {
+      setConfirming(false);
+    }
+  };
+
+  // Team change
+  const confirmTeamChange = (user, team) => {
+    console.log("User selected to change team.", user);
+    setSelectedTeamUser(user);
+    setNewTeam(team);
+    setOpenTeamDialog(true);
+  };
+
+  const handleConfirmTeam = async () => {
+    setConfirmingTeam(true);
+    try {
+      await updateUserTeam(selectedTeamUser.firebaseUid, newTeam);
+      setSnack({ open: true, message: 'Team updated successfully', severity: 'success' });
+      setOpenTeamDialog(false);
+      fetchUsers();
+    } catch (err) {
+      const msg = err.response?.data?.error || 'Failed to update team';
+      setSnack({ open: true, message: msg, severity: 'error' });
+    } finally {
+      setConfirmingTeam(false);
+    }
+  };
+
+  const paginatedUsers = users.slice(
+    page * rowsPerPage,
+    page * rowsPerPage + rowsPerPage
+  );
+
+  return (
+    &lt;TableContainer component={Paper} sx={{ mt: 3 }}>
+      &lt;Typography variant="h5" sx={{ p: 2 }}>👥 User Management Panel&lt;/Typography>
+
+      &lt;Table>
+        &lt;TableHead>
+          &lt;TableRow>
+            &lt;TableCell>Name&lt;/TableCell>
+            &lt;TableCell>Email&lt;/TableCell>
+            &lt;TableCell>Profile Complete&lt;/TableCell>
+            &lt;TableCell>Current Role&lt;/TableCell>
+            &lt;TableCell>Change Role&lt;/TableCell>
+            &lt;TableCell>Current Team&lt;/TableCell>
+            &lt;TableCell>Change Team&lt;/TableCell>
+          &lt;/TableRow>
+        &lt;/TableHead>
+        &lt;TableBody>
+          {paginatedUsers.length === 0 ? (
+            &lt;TableRow>
+              &lt;TableCell colSpan={7} align="center">
+                No users found.
+              &lt;/TableCell>
+            &lt;/TableRow>
+          ) : (
+            paginatedUsers.map(user => (
+              &lt;TableRow key={user._id}>
+                &lt;TableCell>{user.username || user.email}&lt;/TableCell>
+                &lt;TableCell>{user.email}&lt;/TableCell>
+                &lt;TableCell>{user.username ? '✅ Yes' : '❌ No'}&lt;/TableCell>
+                &lt;TableCell>{user.role}&lt;/TableCell>
+                &lt;TableCell>
+                  &lt;Select
+                    value={user.role}
+                    onChange={(e) => confirmRoleChange(user, e.target.value)}
+                    variant="standard"
+                  >
+                    {validRoles.map(role => (
+                      &lt;MenuItem key={role} value={role}>{role}&lt;/MenuItem>
+                    ))}
+                  &lt;/Select>
+                &lt;/TableCell>
+                &lt;TableCell>{user.team || '—'}&lt;/TableCell>
+                &lt;TableCell>
+                  &lt;Select
+                    value={user.team || ''}
+                    onChange={(e) => confirmTeamChange(user, e.target.value)} 
+                  >
+                  &lt;MenuItem value="">None&lt;/MenuItem>
+                    {validTeams.map(team => (
+                  &lt;MenuItem key={team} value={team}>{team}&lt;/MenuItem>
+                ))}
+                    &lt;/Select>
+                &lt;/TableCell>
+              &lt;/TableRow>
+            ))
+          )}
+        &lt;/TableBody>
+      &lt;/Table>
+
+      &lt;TablePagination
+        component="div"
+        count={users.length}
+        page={page}
+        onPageChange={(e, newPage) => setPage(newPage)}
+        rowsPerPage={rowsPerPage}
+        onRowsPerPageChange={(e) => {
+          setRowsPerPage(parseInt(e.target.value, 10));
+          setPage(0);
+        }}
+        rowsPerPageOptions={[5, 10, 20]}
+      />
+
+      {/* Role confirmation dialog */}
+      &lt;Dialog open={openDialog} onClose={() => setOpenDialog(false)}>
+        &lt;DialogTitle>
+          Confirm changing role of &lt;strong>{selectedUser?.username || selectedUser?.email}&lt;/strong> 
+          {` to `}&lt;strong>{newRole}&lt;/strong>?
+        &lt;/DialogTitle>
+        &lt;DialogActions>
+          &lt;Button onClick={() => setOpenDialog(false)}>Cancel&lt;/Button>
+          &lt;Button onClick={handleConfirmRole} variant="contained" color="primary" disabled={confirming}>
+            Confirm
+          &lt;/Button>
+        &lt;/DialogActions>
+      &lt;/Dialog>
+
+      {/* Team confirmation dialog */}
+      &lt;Dialog open={openTeamDialog} onClose={() => setOpenTeamDialog(false)}>
+        &lt;DialogTitle>
+          Confirm changing team of &lt;strong>{selectedTeamUser?.username || selectedTeamUser?.email}&lt;/strong> 
+          {` to `}&lt;strong>{newTeam || 'None'}&lt;/strong>?
+        &lt;/DialogTitle>
+        &lt;DialogActions>
+          &lt;Button onClick={() => setOpenTeamDialog(false)}>Cancel&lt;/Button>
+          &lt;Button onClick={handleConfirmTeam} variant="contained" color="primary" disabled={confirmingTeam}>
+            Confirm
+          &lt;/Button>
+        &lt;/DialogActions>
+      &lt;/Dialog>
+
+      &lt;Snackbar
+        open={snack.open}
+        autoHideDuration={3000}
+        onClose={() => setSnack({ ...snack, open: false })}
+        anchorOrigin={{ vertical: 'bottom', horizontal: 'center' }}
+      >
+        &lt;Alert severity={snack.severity} onClose={() => setSnack({ ...snack, open: false })}>
+          {snack.message}
+        &lt;/Alert>
+      &lt;/Snackbar>
+    &lt;/TableContainer>
+  );
+};
+
+AdminUserPanel.propTypes = {
+  idToken: PropTypes.string.isRequired,
+  currentUser: PropTypes.shape({
+    uid: PropTypes.string.isRequired,
+  }),
+};
+
+export default AdminUserPanel;
+</code></pre>
+        </article>
+    </section>
+
+
+
+
+</div>
+
+<nav>
+    <h2><a href="index.html">Home</a></h2><h3>Modules</h3><ul><li><a href="babel.module_config.html">babel.config</a></li><li><a href="eslint.module_config.html">eslint.config</a></li><li><a href="jest.module_config.html">jest.config</a></li><li><a href="jest.module_setup.html">jest.setup</a></li><li><a href="module-ColorModeContext.html">ColorModeContext</a></li><li><a href="module-ThemeWrapper.html">ThemeWrapper</a></li><li><a href="module-auth_roles.html">auth/roles</a></li><li><a href="module-auth_useFirebaseAuth.html">auth/useFirebaseAuth</a></li><li><a href="module-components_AssistantSidebar.html">components/AssistantSidebar</a></li><li><a href="module-components_AuthProviderButton.html">components/AuthProviderButton</a></li><li><a href="module-components_Column.html">components/Column</a></li><li><a href="module-components_ColumnDroppable.html">components/ColumnDroppable</a></li><li><a href="module-components_EditorPanel.html">components/EditorPanel</a></li><li><a href="module-components_ErrorBoundaryWrapper.html">components/ErrorBoundaryWrapper</a></li><li><a href="module-components_FileTree.html">components/FileTree</a></li><li><a href="module-components_Footer.html">components/Footer</a></li><li><a href="module-components_FormCard.html">components/FormCard</a></li><li><a href="module-components_Input.html">components/Input</a></li><li><a href="module-components_KanbanModals.html">components/KanbanModals</a></li><li><a href="module-components_KanbanOverlay.html">components/KanbanOverlay</a></li><li><a href="module-components_KanbanTaskPreview.html">components/KanbanTaskPreview</a></li><li><a href="module-components_KanbanUtils.html">components/KanbanUtils</a></li><li><a href="module-components_Loading.html">components/Loading</a></li><li><a href="module-components_LocalTaskPanel.html">components/LocalTaskPanel</a></li><li><a href="module-components_Logo.html">components/Logo</a></li><li><a href="module-components_OutputPanel.html">components/OutputPanel</a></li><li><a href="module-components_PersonalTaskPreview.html">components/PersonalTaskPreview</a></li><li><a href="module-components_PersonalTasksPanel.html">components/PersonalTasksPanel</a></li><li><a href="module-components_ProjectSelector.html">components/ProjectSelector</a></li><li><a href="module-components_ProjectSummaryDashboard.html">components/ProjectSummaryDashboard</a></li><li><a href="module-components_RedirectHandler.html">components/RedirectHandler</a></li><li><a href="module-components_SortableTask.html">components/SortableTask</a></li><li><a href="module-components_SuspenseWrapper.html">components/SuspenseWrapper</a></li><li><a href="module-components_TaskCard.html">components/TaskCard</a></li><li><a href="module-components_TaskComments.html">components/TaskComments</a></li><li><a href="module-components_TaskFilters.html">components/TaskFilters</a></li><li><a href="module-components_TerminalPanel.html">components/TerminalPanel</a></li><li><a href="module-components_UserProfilePanel.html">components/UserProfilePanel</a></li><li><a href="module-components_modals_AddKanbanTaskModal.html">components/modals/AddKanbanTaskModal</a></li><li><a href="module-components_modals_AddTaskModal.html">components/modals/AddTaskModal</a></li><li><a href="module-components_modals_DeleteTaskModal.html">components/modals/DeleteTaskModal</a></li><li><a href="module-components_modals_EditLocalTaskModal.html">components/modals/EditLocalTaskModal</a></li><li><a href="module-components_modals_EditTaskModal.html">components/modals/EditTaskModal</a></li><li><a href="module-components_modals_LogoutModal.html">components/modals/LogoutModal</a></li><li><a href="module-components_modals_NewKanbanListModal.html">components/modals/NewKanbanListModal</a></li><li><a href="module-components_modals_NewListModal.html">components/modals/NewListModal</a></li><li><a href="module-components_modals_NewProjectModal.html">components/modals/NewProjectModal</a></li><li><a href="module-components_modals_ProjectDetailModal.html">components/modals/ProjectDetailModal</a></li><li><a href="module-components_modals_TaskDetailModal.html">components/modals/TaskDetailModal</a></li><li><a href="module-components_navbar_NavCategory.html">components/navbar/NavCategory</a></li><li><a href="module-components_navbar_Navbar.html">components/navbar/Navbar</a></li><li><a href="module-components_navbar_navDropdowns.html">components/navbar/navDropdowns</a></li><li><a href="module-context_AuthContext.html">context/AuthContext</a></li><li><a href="module-context_AuthProvider.html">context/AuthProvider</a></li><li><a href="module-context_ModalContext.html">context/ModalContext</a></li><li><a href="module-context_ModalProvider.html">context/ModalProvider</a></li><li><a href="module-firebase_auth.html">firebase/auth</a></li><li><a href="module-firebase_authUtils.html">firebase/authUtils</a></li><li><a href="module-hooks_init.html">hooks/init</a></li><li><a href="module-hooks_useAuth.html">hooks/useAuth</a></li><li><a href="module-hooks_useModal.html">hooks/useModal</a></li><li><a href="module-hooks_useUser.html">hooks/useUser</a></li><li><a href="module-hooks_utilsAuth.html">hooks/utilsAuth</a></li><li><a href="module-layouts_PrivateLayout.html">layouts/PrivateLayout</a></li><li><a href="module-layouts_PublicLayout.html">layouts/PublicLayout</a></li><li><a href="module-layouts_RootLayout.html">layouts/RootLayout</a></li><li><a href="module-main.html">main</a></li><li><a href="module-pages_AdminUserPanel.html">pages/AdminUserPanel</a></li><li><a href="module-pages_CodeReviewPanel.html">pages/CodeReviewPanel</a></li><li><a href="module-pages_CollaborativeCodeEditor.html">pages/CollaborativeCodeEditor</a></li><li><a href="module-pages_Dashboard.html">pages/Dashboard</a></li><li><a href="module-pages_KanbanBoard.html">pages/KanbanBoard</a></li><li><a href="module-pages_LocalTaskBoard.html">pages/LocalTaskBoard</a></li><li><a href="module-pages_MyProjects.html">pages/MyProjects</a></li><li><a href="module-pages_NotFound.html">pages/NotFound</a></li><li><a href="module-pages_PersonalTasksBoard.html">pages/PersonalTasksBoard</a></li><li><a href="module-pages_Profile.html">pages/Profile</a></li><li><a href="module-pages_ProjectDashboard.html">pages/ProjectDashboard</a></li><li><a href="module-pages_ProjectDocumentation.html">pages/ProjectDocumentation</a></li><li><a href="module-pages_ProjectManagementDashboard.html">pages/ProjectManagementDashboard</a></li><li><a href="module-pages_Settings.html">pages/Settings</a></li><li><a href="module-pages_TasksPage.html">pages/TasksPage</a></li><li><a href="module-pages_TeamChatModule.html">pages/TeamChatModule</a></li><li><a href="module-pages_docs_QuickStartGuide.html">pages/docs/QuickStartGuide</a></li><li><a href="module-pages_public__HelpCenter.html">pages/public//HelpCenter</a></li><li><a href="module-pages_public_AIAssistant.html">pages/public/AIAssistant</a></li><li><a href="module-pages_public_Blog.html">pages/public/Blog</a></li><li><a href="module-pages_public_ContactSupport.html">pages/public/ContactSupport</a></li><li><a href="module-pages_public_Features.html">pages/public/Features</a></li><li><a href="module-pages_public_ForDevelopers.html">pages/public/ForDevelopers</a></li><li><a href="module-pages_public_Home.html">pages/public/Home</a></li><li><a href="module-pages_public_PrivacyPolicy.html">pages/public/PrivacyPolicy</a></li><li><a href="module-pages_public_SignIn.html">pages/public/SignIn</a></li><li><a href="module-pages_public_SignUp.html">pages/public/SignUp</a></li><li><a href="module-pages_public_TermsOfService.html">pages/public/TermsOfService</a></li><li><a href="module-pages_public_Testimonials.html">pages/public/Testimonials</a></li><li><a href="module-routes_AdminDashboardRoutes.html">routes/AdminDashboardRoutes</a></li><li><a href="module-routes_AdminRoutes.html">routes/AdminRoutes</a></li><li><a href="module-routes_DashboardRoutes.html">routes/DashboardRoutes</a></li><li><a href="module-routes_IndexRoute.html">routes/IndexRoute</a></li><li><a href="module-routes_ModalRoutes.html">routes/ModalRoutes</a></li><li><a href="module-routes_ProtectedRoute.html">routes/ProtectedRoute</a></li><li><a href="module-routes_PublicRoutes.html">routes/PublicRoutes</a></li><li><a href="module-routes_Routes.html">routes/Routes</a></li><li><a href="module-services_assistantService.html">services/assistantService</a></li><li><a href="module-services_auth_handleLoginRedirect.html">services/auth/handleLoginRedirect</a></li><li><a href="module-services_auth_logoutRequest.html">services/auth/logoutRequest</a></li><li><a href="module-services_auth_roleUtils.html">services/auth/roleUtils</a></li><li><a href="module-services_auth_signInAuth.html">services/auth/signInAuth</a></li><li><a href="module-services_auth_signUpAuth.html">services/auth/signUpAuth</a></li><li><a href="module-services_avatarService.html">services/avatarService</a></li><li><a href="module-services_editorServices.html">services/editorServices</a></li><li><a href="module-services_fileService.html">services/fileService</a></li><li><a href="module-services_kanbanService.html">services/kanbanService</a></li><li><a href="module-services_profileService.html">services/profileService</a></li><li><a href="module-services_projectService.html">services/projectService</a></li><li><a href="module-services_taskService.html">services/taskService</a></li><li><a href="module-services_userService.html">services/userService</a></li><li><a href="module-theme.html">theme</a></li><li><a href="module-utils_authUtils.html">utils/authUtils</a></li><li><a href="module-utils_axiosConfig.html">utils/axiosConfig</a></li><li><a href="module-utils_cleanMentorOutput.html">utils/cleanMentorOutput</a></li><li><a href="module-utils_getRedirectForRole.html">utils/getRedirectForRole</a></li><li><a href="module-utils_monacoConfig.html">utils/monacoConfig</a></li><li><a href="module-utils_syncUserAndRedirect.html">utils/syncUserAndRedirect</a></li><li><a href="module-utils_taskUtils.html">utils/taskUtils</a></li><li><a href="module-utils_userToken.html">utils/userToken</a></li><li><a href="module-views_unauthorized.html">views/unauthorized</a></li><li><a href="vite.module_config.html">vite.config</a></li></ul><h3>Classes</h3><ul><li><a href="-_src_server_project.ts_-ConfiguredProject2.html">ConfiguredProject2</a></li><li><a href="-_src_server_project.ts_-ExternalProject2.html">ExternalProject2</a></li><li><a href="-_src_server_project.ts_-InferredProject2.html">InferredProject2</a></li><li><a href="-_src_server_project.ts_-Project3.html">Project3</a></li><li><a href="-_src_server_project.ts_-_AutoImportProviderProject.html">_AutoImportProviderProject</a></li><li><a href="-_src_services_textChanges.ts_-ChangeTracker.html">ChangeTracker</a></li><li><a href="module-components_ErrorBoundaryWrapper-ErrorBoundaryWrapper.html">ErrorBoundaryWrapper</a></li></ul><h3>Events</h3><ul><li><a href="module-utils_userToken.html#~event:onIdTokenChanged">onIdTokenChanged</a></li></ul><h3>Global</h3><ul><li><a href="global.html#renderWithRouter">renderWithRouter</a></li></ul>
+</nav>
+
+<br class="clear">
+
+<footer>
+    Documentation generated by <a href="https://github.com/jsdoc/jsdoc">JSDoc 4.0.5</a> on Wed Feb 11 2026 23:56:34 GMT+0000 (Coordinated Universal Time)
+</footer>
+
+<script> prettyPrint(); </script>
+<script src="scripts/linenumber.js"> </script>
+</body>
+</html>

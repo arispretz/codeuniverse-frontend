@@ -1,0 +1,309 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="utf-8">
+    <title>JSDoc: Source: src/pages/PersonalTaskBoard.jsx</title>
+
+    <script src="scripts/prettify/prettify.js"> </script>
+    <script src="scripts/prettify/lang-css.js"> </script>
+    <!--[if lt IE 9]>
+      <script src="//html5shiv.googlecode.com/svn/trunk/html5.js"></script>
+    <![endif]-->
+    <link type="text/css" rel="stylesheet" href="styles/prettify-tomorrow.css">
+    <link type="text/css" rel="stylesheet" href="styles/jsdoc-default.css">
+</head>
+
+<body>
+
+<div id="main">
+
+    <h1 class="page-title">Source: src/pages/PersonalTaskBoard.jsx</h1>
+
+    
+
+
+
+    
+    <section>
+        <article>
+            <pre class="prettyprint source linenums"><code>/**
+ * @fileoverview PersonalTasksBoard component.
+ * Displays personal tasks with CRUD operations (create, view, edit, delete).
+ * Includes modals for viewing and editing tasks, and snackbar notifications.
+ *
+ * @module pages/PersonalTasksBoard
+ */
+
+import React, { useEffect, useState } from "react";
+import {
+  Typography,
+  List,
+  ListItem,
+  ListItemText,
+  Button,
+  TextField,
+  Box,
+  IconButton,
+  Dialog,
+  DialogTitle,
+  DialogContent,
+  DialogActions,
+  Snackbar,
+  Alert,
+} from "@mui/material";
+import DeleteIcon from "@mui/icons-material/Delete";
+import VisibilityIcon from "@mui/icons-material/Visibility";
+import EditIcon from "@mui/icons-material/Edit";
+import { useAuthState } from "react-firebase-hooks/auth";
+import { auth } from "../firebase/auth.js";
+
+import {
+  getPersonalTasks,
+  createPersonalTask,
+  updatePersonalTask,
+  deletePersonalTask,
+} from "../services/taskService.js";
+
+/**
+ * PersonalTasksBoard component.
+ * Renders a list of personal tasks with options to create, view, edit, and delete.
+ *
+ * @function PersonalTasksBoard
+ * @returns {JSX.Element} Personal tasks board layout
+ */
+const PersonalTasksBoard = () => {
+  const [tasks, setTasks] = useState([]);
+  const [form, setForm] = useState({ title: "", description: "" });
+  const [selectedTask, setSelectedTask] = useState(null);
+  const [openView, setOpenView] = useState(false);
+  const [openEdit, setOpenEdit] = useState(false);
+
+  const [user] = useAuthState(auth);
+
+  // Snackbar
+  const [snackbarOpen, setSnackbarOpen] = useState(false);
+  const [snackbarMessage, setSnackbarMessage] = useState("");
+  const [snackbarSeverity, setSnackbarSeverity] = useState("success");
+
+  const showSnackbar = (message, severity = "success") => {
+    setSnackbarMessage(message);
+    setSnackbarSeverity(severity);
+    setSnackbarOpen(true);
+  };
+
+  /**
+   * Fetch personal tasks from the backend.
+   */
+  const fetchTasks = async () => {
+    try {
+      const data = await getPersonalTasks();
+      setTasks(Array.isArray(data) ? data : data.items || []);
+    } catch {
+      showSnackbar("Error fetching personal tasks", "error");
+    }
+  };
+
+  useEffect(() => {
+    if (user) fetchTasks();
+  }, [user]);
+
+  const handleChange = (field, value) => {
+    setForm((prev) => ({ ...prev, [field]: value }));
+  };
+
+  /**
+   * Create a new personal task.
+   */
+  const handleSubmit = async () => {
+    if (!form.title.trim()) return;
+    try {
+      const newTask = await createPersonalTask({
+        title: form.title,
+        description: form.description,
+        status: "todo", // ensure backend status is valid
+      });
+      setTasks((prev) => [...prev, newTask]);
+      setForm({ title: "", description: "" });
+      showSnackbar("Task created successfully ✅", "success");
+    } catch {
+      showSnackbar("Error creating personal task", "error");
+    }
+  };
+
+  /**
+   * Delete a personal task.
+   * @param {string} id - Task ID
+   */
+  const handleDelete = async (id) => {
+    try {
+      await deletePersonalTask(id);
+      setTasks((prev) => prev.filter((t) => t._id !== id));
+      showSnackbar("Task deleted ✅", "success");
+    } catch {
+      showSnackbar("Error deleting personal task", "error");
+    }
+  };
+
+  const handleView = (task) => {
+    setSelectedTask(task);
+    setOpenView(true);
+  };
+
+  const handleEdit = (task) => {
+    setSelectedTask(task);
+    setForm({ title: task.title, description: task.description });
+    setOpenEdit(true);
+  };
+
+  /**
+   * Update a personal task.
+   */
+  const handleUpdate = async () => {
+    try {
+      const updatedTask = await updatePersonalTask(selectedTask._id, {
+        ...form,
+        status: selectedTask.status || "todo",
+      });
+      setTasks((prev) =>
+        prev.map((t) => (t._id === selectedTask._id ? updatedTask : t))
+      );
+      setOpenEdit(false);
+      setSelectedTask(null);
+      setForm({ title: "", description: "" });
+      showSnackbar("Task updated successfully ✅", "success");
+    } catch {
+      showSnackbar("Error updating personal task", "error");
+    }
+  };
+
+  return (
+    &lt;Box sx={{ p: 2 }}>
+      &lt;Typography variant="h5">🧍 Personal Tasks&lt;/Typography>
+      &lt;TextField
+        label="Title"
+        fullWidth
+        value={form.title}
+        onChange={(e) => handleChange("title", e.target.value)}
+        sx={{ mb: 1 }}
+      />
+      &lt;TextField
+        label="Description"
+        fullWidth
+        multiline
+        rows={2}
+        value={form.description}
+        onChange={(e) => handleChange("description", e.target.value)}
+        sx={{ mb: 2 }}
+      />
+      &lt;Button variant="contained" onClick={handleSubmit}>
+        ➕ Create Task
+      &lt;/Button>
+
+            &lt;List sx={{ mt: 2 }}>
+        {tasks.map((task) => (
+          &lt;ListItem
+            key={task._id}
+            secondaryAction={
+              &lt;>
+                &lt;IconButton edge="end" onClick={() => handleView(task)}>
+                  &lt;VisibilityIcon />
+                &lt;/IconButton>
+                &lt;IconButton edge="end" onClick={() => handleEdit(task)}>
+                  &lt;EditIcon />
+                &lt;/IconButton>
+                &lt;IconButton edge="end" onClick={() => handleDelete(task._id)}>
+                  &lt;DeleteIcon />
+                &lt;/IconButton>
+              &lt;/>
+            }
+          >
+            &lt;ListItemText primary={task.title} secondary={task.description} />
+          &lt;/ListItem>
+        ))}
+      &lt;/List>
+
+      {/* View Modal */}
+      &lt;Dialog open={openView} onClose={() => setOpenView(false)}>
+        &lt;DialogTitle>Task Details&lt;/DialogTitle>
+        &lt;DialogContent>
+          &lt;Typography variant="subtitle1">{selectedTask?.title}&lt;/Typography>
+          &lt;Typography variant="body2">{selectedTask?.description}&lt;/Typography>
+        &lt;/DialogContent>
+        &lt;DialogActions>
+          &lt;Button onClick={() => setOpenView(false)}>Close&lt;/Button>
+        &lt;/DialogActions>
+      &lt;/Dialog>
+
+      {/* Edit Modal */}
+      &lt;Dialog open={openEdit} onClose={() => setOpenEdit(false)}>
+        &lt;DialogTitle>Edit Task&lt;/DialogTitle>
+        &lt;DialogContent>
+          &lt;TextField
+            label="Title"
+            fullWidth
+            value={form.title}
+            onChange={(e) => handleChange("title", e.target.value)}
+            sx={{ mb: 1 }}
+          />
+          &lt;TextField
+            label="Description"
+            fullWidth
+            multiline
+            rows={2}
+            value={form.description}
+            onChange={(e) => handleChange("description", e.target.value)}
+            sx={{ mb: 2 }}
+          />
+        &lt;/DialogContent>
+        &lt;DialogActions>
+          &lt;Button onClick={() => setOpenEdit(false)}>Cancel&lt;/Button>
+          &lt;Button variant="contained" onClick={handleUpdate}>
+            Save
+          &lt;/Button>
+        &lt;/DialogActions>
+      &lt;/Dialog>
+
+      {/* Snackbar */}
+      &lt;Snackbar
+        open={snackbarOpen}
+        autoHideDuration={4000}
+        onClose={() => setSnackbarOpen(false)}
+        anchorOrigin={{ vertical: "bottom", horizontal: "center" }}
+      >
+        &lt;Alert
+          onClose={() => setSnackbarOpen(false)}
+          severity={snackbarSeverity}
+          sx={{ width: "100%" }}
+        >
+          {snackbarMessage}
+        &lt;/Alert>
+      &lt;/Snackbar>
+    &lt;/Box>
+  );
+};
+
+export default PersonalTasksBoard;
+
+</code></pre>
+        </article>
+    </section>
+
+
+
+
+</div>
+
+<nav>
+    <h2><a href="index.html">Home</a></h2><h3>Modules</h3><ul><li><a href="babel.module_config.html">babel.config</a></li><li><a href="eslint.module_config.html">eslint.config</a></li><li><a href="jest.module_config.html">jest.config</a></li><li><a href="jest.module_setup.html">jest.setup</a></li><li><a href="module-ColorModeContext.html">ColorModeContext</a></li><li><a href="module-ThemeWrapper.html">ThemeWrapper</a></li><li><a href="module-auth_roles.html">auth/roles</a></li><li><a href="module-auth_useFirebaseAuth.html">auth/useFirebaseAuth</a></li><li><a href="module-components_AssistantSidebar.html">components/AssistantSidebar</a></li><li><a href="module-components_AuthProviderButton.html">components/AuthProviderButton</a></li><li><a href="module-components_Column.html">components/Column</a></li><li><a href="module-components_ColumnDroppable.html">components/ColumnDroppable</a></li><li><a href="module-components_EditorPanel.html">components/EditorPanel</a></li><li><a href="module-components_ErrorBoundaryWrapper.html">components/ErrorBoundaryWrapper</a></li><li><a href="module-components_FileTree.html">components/FileTree</a></li><li><a href="module-components_Footer.html">components/Footer</a></li><li><a href="module-components_FormCard.html">components/FormCard</a></li><li><a href="module-components_Input.html">components/Input</a></li><li><a href="module-components_KanbanModals.html">components/KanbanModals</a></li><li><a href="module-components_KanbanOverlay.html">components/KanbanOverlay</a></li><li><a href="module-components_KanbanTaskPreview.html">components/KanbanTaskPreview</a></li><li><a href="module-components_KanbanUtils.html">components/KanbanUtils</a></li><li><a href="module-components_Loading.html">components/Loading</a></li><li><a href="module-components_LocalTaskPanel.html">components/LocalTaskPanel</a></li><li><a href="module-components_Logo.html">components/Logo</a></li><li><a href="module-components_OutputPanel.html">components/OutputPanel</a></li><li><a href="module-components_PersonalTaskPreview.html">components/PersonalTaskPreview</a></li><li><a href="module-components_PersonalTasksPanel.html">components/PersonalTasksPanel</a></li><li><a href="module-components_ProjectSelector.html">components/ProjectSelector</a></li><li><a href="module-components_ProjectSummaryDashboard.html">components/ProjectSummaryDashboard</a></li><li><a href="module-components_RedirectHandler.html">components/RedirectHandler</a></li><li><a href="module-components_SortableTask.html">components/SortableTask</a></li><li><a href="module-components_SuspenseWrapper.html">components/SuspenseWrapper</a></li><li><a href="module-components_TaskCard.html">components/TaskCard</a></li><li><a href="module-components_TaskComments.html">components/TaskComments</a></li><li><a href="module-components_TaskFilters.html">components/TaskFilters</a></li><li><a href="module-components_TerminalPanel.html">components/TerminalPanel</a></li><li><a href="module-components_UserProfilePanel.html">components/UserProfilePanel</a></li><li><a href="module-components_modals_AddKanbanTaskModal.html">components/modals/AddKanbanTaskModal</a></li><li><a href="module-components_modals_AddTaskModal.html">components/modals/AddTaskModal</a></li><li><a href="module-components_modals_DeleteTaskModal.html">components/modals/DeleteTaskModal</a></li><li><a href="module-components_modals_EditLocalTaskModal.html">components/modals/EditLocalTaskModal</a></li><li><a href="module-components_modals_EditTaskModal.html">components/modals/EditTaskModal</a></li><li><a href="module-components_modals_LogoutModal.html">components/modals/LogoutModal</a></li><li><a href="module-components_modals_NewKanbanListModal.html">components/modals/NewKanbanListModal</a></li><li><a href="module-components_modals_NewListModal.html">components/modals/NewListModal</a></li><li><a href="module-components_modals_NewProjectModal.html">components/modals/NewProjectModal</a></li><li><a href="module-components_modals_ProjectDetailModal.html">components/modals/ProjectDetailModal</a></li><li><a href="module-components_modals_TaskDetailModal.html">components/modals/TaskDetailModal</a></li><li><a href="module-components_navbar_NavCategory.html">components/navbar/NavCategory</a></li><li><a href="module-components_navbar_Navbar.html">components/navbar/Navbar</a></li><li><a href="module-components_navbar_navDropdowns.html">components/navbar/navDropdowns</a></li><li><a href="module-context_AuthContext.html">context/AuthContext</a></li><li><a href="module-context_AuthProvider.html">context/AuthProvider</a></li><li><a href="module-context_ModalContext.html">context/ModalContext</a></li><li><a href="module-context_ModalProvider.html">context/ModalProvider</a></li><li><a href="module-firebase_auth.html">firebase/auth</a></li><li><a href="module-firebase_authUtils.html">firebase/authUtils</a></li><li><a href="module-hooks_init.html">hooks/init</a></li><li><a href="module-hooks_useAuth.html">hooks/useAuth</a></li><li><a href="module-hooks_useModal.html">hooks/useModal</a></li><li><a href="module-hooks_useUser.html">hooks/useUser</a></li><li><a href="module-hooks_utilsAuth.html">hooks/utilsAuth</a></li><li><a href="module-layouts_PrivateLayout.html">layouts/PrivateLayout</a></li><li><a href="module-layouts_PublicLayout.html">layouts/PublicLayout</a></li><li><a href="module-layouts_RootLayout.html">layouts/RootLayout</a></li><li><a href="module-main.html">main</a></li><li><a href="module-pages_AdminUserPanel.html">pages/AdminUserPanel</a></li><li><a href="module-pages_CodeReviewPanel.html">pages/CodeReviewPanel</a></li><li><a href="module-pages_CollaborativeCodeEditor.html">pages/CollaborativeCodeEditor</a></li><li><a href="module-pages_Dashboard.html">pages/Dashboard</a></li><li><a href="module-pages_KanbanBoard.html">pages/KanbanBoard</a></li><li><a href="module-pages_LocalTaskBoard.html">pages/LocalTaskBoard</a></li><li><a href="module-pages_MyProjects.html">pages/MyProjects</a></li><li><a href="module-pages_NotFound.html">pages/NotFound</a></li><li><a href="module-pages_PersonalTasksBoard.html">pages/PersonalTasksBoard</a></li><li><a href="module-pages_Profile.html">pages/Profile</a></li><li><a href="module-pages_ProjectDashboard.html">pages/ProjectDashboard</a></li><li><a href="module-pages_ProjectDocumentation.html">pages/ProjectDocumentation</a></li><li><a href="module-pages_ProjectManagementDashboard.html">pages/ProjectManagementDashboard</a></li><li><a href="module-pages_Settings.html">pages/Settings</a></li><li><a href="module-pages_TasksPage.html">pages/TasksPage</a></li><li><a href="module-pages_TeamChatModule.html">pages/TeamChatModule</a></li><li><a href="module-pages_docs_QuickStartGuide.html">pages/docs/QuickStartGuide</a></li><li><a href="module-pages_public__HelpCenter.html">pages/public//HelpCenter</a></li><li><a href="module-pages_public_AIAssistant.html">pages/public/AIAssistant</a></li><li><a href="module-pages_public_Blog.html">pages/public/Blog</a></li><li><a href="module-pages_public_ContactSupport.html">pages/public/ContactSupport</a></li><li><a href="module-pages_public_Features.html">pages/public/Features</a></li><li><a href="module-pages_public_ForDevelopers.html">pages/public/ForDevelopers</a></li><li><a href="module-pages_public_Home.html">pages/public/Home</a></li><li><a href="module-pages_public_PrivacyPolicy.html">pages/public/PrivacyPolicy</a></li><li><a href="module-pages_public_SignIn.html">pages/public/SignIn</a></li><li><a href="module-pages_public_SignUp.html">pages/public/SignUp</a></li><li><a href="module-pages_public_TermsOfService.html">pages/public/TermsOfService</a></li><li><a href="module-pages_public_Testimonials.html">pages/public/Testimonials</a></li><li><a href="module-routes_AdminDashboardRoutes.html">routes/AdminDashboardRoutes</a></li><li><a href="module-routes_AdminRoutes.html">routes/AdminRoutes</a></li><li><a href="module-routes_DashboardRoutes.html">routes/DashboardRoutes</a></li><li><a href="module-routes_IndexRoute.html">routes/IndexRoute</a></li><li><a href="module-routes_ModalRoutes.html">routes/ModalRoutes</a></li><li><a href="module-routes_ProtectedRoute.html">routes/ProtectedRoute</a></li><li><a href="module-routes_PublicRoutes.html">routes/PublicRoutes</a></li><li><a href="module-routes_Routes.html">routes/Routes</a></li><li><a href="module-services_assistantService.html">services/assistantService</a></li><li><a href="module-services_auth_handleLoginRedirect.html">services/auth/handleLoginRedirect</a></li><li><a href="module-services_auth_logoutRequest.html">services/auth/logoutRequest</a></li><li><a href="module-services_auth_roleUtils.html">services/auth/roleUtils</a></li><li><a href="module-services_auth_signInAuth.html">services/auth/signInAuth</a></li><li><a href="module-services_auth_signUpAuth.html">services/auth/signUpAuth</a></li><li><a href="module-services_avatarService.html">services/avatarService</a></li><li><a href="module-services_editorServices.html">services/editorServices</a></li><li><a href="module-services_fileService.html">services/fileService</a></li><li><a href="module-services_kanbanService.html">services/kanbanService</a></li><li><a href="module-services_profileService.html">services/profileService</a></li><li><a href="module-services_projectService.html">services/projectService</a></li><li><a href="module-services_taskService.html">services/taskService</a></li><li><a href="module-services_userService.html">services/userService</a></li><li><a href="module-theme.html">theme</a></li><li><a href="module-utils_authUtils.html">utils/authUtils</a></li><li><a href="module-utils_axiosConfig.html">utils/axiosConfig</a></li><li><a href="module-utils_cleanMentorOutput.html">utils/cleanMentorOutput</a></li><li><a href="module-utils_getRedirectForRole.html">utils/getRedirectForRole</a></li><li><a href="module-utils_monacoConfig.html">utils/monacoConfig</a></li><li><a href="module-utils_syncUserAndRedirect.html">utils/syncUserAndRedirect</a></li><li><a href="module-utils_taskUtils.html">utils/taskUtils</a></li><li><a href="module-utils_userToken.html">utils/userToken</a></li><li><a href="module-views_unauthorized.html">views/unauthorized</a></li><li><a href="vite.module_config.html">vite.config</a></li></ul><h3>Classes</h3><ul><li><a href="-_src_server_project.ts_-ConfiguredProject2.html">ConfiguredProject2</a></li><li><a href="-_src_server_project.ts_-ExternalProject2.html">ExternalProject2</a></li><li><a href="-_src_server_project.ts_-InferredProject2.html">InferredProject2</a></li><li><a href="-_src_server_project.ts_-Project3.html">Project3</a></li><li><a href="-_src_server_project.ts_-_AutoImportProviderProject.html">_AutoImportProviderProject</a></li><li><a href="-_src_services_textChanges.ts_-ChangeTracker.html">ChangeTracker</a></li><li><a href="module-components_ErrorBoundaryWrapper-ErrorBoundaryWrapper.html">ErrorBoundaryWrapper</a></li></ul><h3>Events</h3><ul><li><a href="module-utils_userToken.html#~event:onIdTokenChanged">onIdTokenChanged</a></li></ul><h3>Global</h3><ul><li><a href="global.html#renderWithRouter">renderWithRouter</a></li></ul>
+</nav>
+
+<br class="clear">
+
+<footer>
+    Documentation generated by <a href="https://github.com/jsdoc/jsdoc">JSDoc 4.0.5</a> on Wed Feb 11 2026 23:56:34 GMT+0000 (Coordinated Universal Time)
+</footer>
+
+<script> prettyPrint(); </script>
+<script src="scripts/linenumber.js"> </script>
+</body>
+</html>

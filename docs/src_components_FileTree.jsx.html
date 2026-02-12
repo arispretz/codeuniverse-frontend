@@ -1,0 +1,387 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="utf-8">
+    <title>JSDoc: Source: src/components/FileTree.jsx</title>
+
+    <script src="scripts/prettify/prettify.js"> </script>
+    <script src="scripts/prettify/lang-css.js"> </script>
+    <!--[if lt IE 9]>
+      <script src="//html5shiv.googlecode.com/svn/trunk/html5.js"></script>
+    <![endif]-->
+    <link type="text/css" rel="stylesheet" href="styles/prettify-tomorrow.css">
+    <link type="text/css" rel="stylesheet" href="styles/jsdoc-default.css">
+</head>
+
+<body>
+
+<div id="main">
+
+    <h1 class="page-title">Source: src/components/FileTree.jsx</h1>
+
+    
+
+
+
+    
+    <section>
+        <article>
+            <pre class="prettyprint source linenums"><code>/**
+ * @fileoverview FileTree and FileNode components.
+ * Provides a project file tree with support for creating, renaming, deleting,
+ * and moving files/folders using drag-and-drop (`react-dnd`).
+ *
+ * @module components/FileTree
+ */
+
+import React, { useEffect, useState } from "react";
+import {
+  Box,
+  Typography,
+  IconButton,
+  TextField,
+  Button,
+  MenuItem,
+  Select,
+  FormControl,
+  InputLabel,
+  Collapse,
+} from "@mui/material";
+import {
+  DriveFileRenameOutline,
+  Delete,
+  Folder,
+  InsertDriveFile,
+} from "@mui/icons-material";
+import { DndProvider, useDrag, useDrop } from "react-dnd";
+import { HTML5Backend } from "react-dnd-html5-backend";
+
+import {
+  getProjectFileTree,
+  createProjectFile,
+  renameProjectFile,
+  deleteProjectFile,
+  moveProjectFile,
+} from "../services/fileService.js";
+
+/**
+ * FileNode Component
+ *
+ * @function FileNode
+ * @description Represents a single node in the file tree (file or folder).
+ * Supports rename, delete, and drag-and-drop move operations.
+ *
+ * @param {Object} props - Component props.
+ * @param {Object} props.node - File or folder node object.
+ * @param {string} props.node._id - Unique identifier of the node.
+ * @param {string} props.node.name - Display name of the node.
+ * @param {string} props.node.type - Type of the node ("file" or "folder").
+ * @param {Array&lt;Object>} [props.node.children] - Child nodes if the node is a folder.
+ * @param {Function} props.onOpen - Callback when a file is opened.
+ * @param {Function} props.onRename - Callback when a node is renamed.
+ * @param {Function} props.onDelete - Callback when a node is deleted.
+ * @param {Function} props.onMove - Callback when a node is moved via drag-and-drop.
+ * @returns {JSX.Element} File node component.
+ *
+ * @example
+ * &lt;FileNode
+ *   node={{ _id: "1", name: "index.js", type: "file" }}
+ *   onOpen={(file) => console.log("Opened:", file)}
+ *   onRename={(id, name) => console.log("Renamed:", id, name)}
+ *   onDelete={(id) => console.log("Deleted:", id)}
+ *   onMove={(id, parentId) => console.log("Moved:", id, "to", parentId)}
+ * />
+ */
+const FileNode = ({ node, onOpen, onRename, onDelete, onMove }) => {
+  const [expanded, setExpanded] = useState(false);
+  const [isRenaming, setIsRenaming] = useState(false);
+  const [newName, setNewName] = useState(node.name);
+
+  const handleRename = () => {
+    if (newName.trim()) {
+      onRename(node._id, newName);
+    }
+    setIsRenaming(false);
+  };
+
+  const [{ isDragging }, drag] = useDrag(() => ({
+    type: "file-node",
+    item: { id: node._id },
+  }));
+
+  const [, drop] = useDrop(() => ({
+    accept: "file-node",
+    drop: (draggedItem) => {
+      if (node.type !== "folder") return;
+      if (draggedItem.id !== node._id) onMove(draggedItem.id, node._id);
+    },
+  }));
+
+  return (
+    &lt;Box ref={drop} sx={{ ml: 1 }}>
+      {/* Node header */}
+      &lt;Box
+        ref={drag}
+        sx={{
+          opacity: isDragging ? 0.5 : 1,
+          display: "flex",
+          alignItems: "center",
+          justifyContent: "space-between",
+          cursor: "pointer",
+          p: 0.5,
+          borderRadius: 1,
+          "&amp;:hover": { bgcolor: "rgba(255,255,255,0.05)" },
+        }}
+      >
+        &lt;Box
+          sx={{ display: "flex", alignItems: "center", flexGrow: 1 }}
+          onClick={() =>
+            node.type === "folder" ? setExpanded(!expanded) : onOpen(node)
+          }
+        >
+          {node.type === "folder" ? (
+            &lt;Folder fontSize="small" />
+          ) : (
+            &lt;InsertDriveFile fontSize="small" />
+          )}
+          {isRenaming ? (
+            &lt;TextField
+              size="small"
+              value={newName}
+              onChange={(e) => setNewName(e.target.value)}
+              onBlur={handleRename}
+              onKeyDown={(e) => e.key === "Enter" &amp;&amp; handleRename()}
+              autoFocus
+              sx={{ ml: 1 }}
+            />
+          ) : (
+            &lt;Typography sx={{ ml: 1, fontSize: "0.9rem" }}>
+              {node.name}
+            &lt;/Typography>
+          )}
+        &lt;/Box>
+
+        {/* Action buttons */}
+        &lt;Box sx={{ display: "flex", gap: 0.5 }}>
+          &lt;IconButton size="small" onClick={() => setIsRenaming(true)}>
+            &lt;DriveFileRenameOutline fontSize="small" />
+          &lt;/IconButton>
+          &lt;IconButton size="small" onClick={() => onDelete(node._id)}>
+            &lt;Delete fontSize="small" />
+          &lt;/IconButton>
+        &lt;/Box>
+      &lt;/Box>
+
+      {/* Children (if folder) */}
+      &lt;Collapse in={expanded} timeout="auto" unmountOnExit>
+        {node.children?.map((child) => (
+          &lt;FileNode
+            key={child._id}
+            node={child}
+            onOpen={onOpen}
+            onRename={onRename}
+            onDelete={onDelete}
+            onMove={onMove}
+          />
+        ))}
+      &lt;/Collapse>
+    &lt;/Box>
+  );
+};
+
+/**
+ * FileTree Component
+ *
+ * @function FileTree
+ * @description Displays the project file tree with support for creating, renaming, deleting, and moving files/folders.
+ *
+ * @param {Object} props - Component props.
+ * @param {string} props.projectId - ID of the project to fetch the file tree for.
+ * @param {Function} props.onOpenFile - Callback when a file is opened.
+ * @returns {JSX.Element} File tree component.
+ *
+ * @example
+ * &lt;FileTree
+ *   projectId="12345"
+ *   onOpenFile={(file) => console.log("Opened file:", file)}
+ * />
+ */
+const FileTree = ({ projectId, onOpenFile }) => {
+  const [tree, setTree] = useState([]);
+  const [newName, setNewName] = useState("");
+  const [newType, setNewType] = useState("folder");
+  const [newContent, setNewContent] = useState("");
+
+  /**
+   * Fetches the file tree from backend service.
+   *
+   * @async
+   * @function fetchTree
+   * @returns {Promise&lt;void>} Resolves when tree state is updated.
+   */
+  const fetchTree = async () => {
+    if (!projectId) return;
+    try {
+      const data = await getProjectFileTree(projectId);
+      setTree(data);
+    } catch (err) {
+      console.error("❌ Error loading file tree:", err);
+    }
+  };
+
+  useEffect(() => {
+    fetchTree();
+  }, [projectId]);
+
+  /**
+   * Creates a new file or folder node in the project.
+   *
+   * @async
+   * @function createNode
+   * @returns {Promise&lt;void>} Resolves when node is created and tree updated.
+   */
+  const createNode = async () => {
+    if (!newName.trim() || !projectId) return;
+
+    const payload = {
+      projectId,
+      name: newName,
+      type: newType,
+      parentId: null,
+      ...(newType === "file" &amp;&amp; { content: newContent }),
+    };
+
+    try {
+      const data = await createProjectFile(payload);
+      if (data.type === "file") onOpenFile(data);
+      setNewName("");
+      setNewContent("");
+      setNewType("folder");
+      fetchTree();
+    } catch (error) {
+      console.error("❌ Error creating node:", error);
+    }
+  };
+
+  /**
+   * Renames a node in the project.
+   *
+   * @async
+   * @function renameNode
+   * @param {string} id - Node ID.
+   * @param {string} newName - New name for the node.
+   */
+  const renameNode = async (id, newName) => {
+    await renameProjectFile(id, newName);
+    fetchTree();
+  };
+
+  /**
+   * Deletes a node from the project.
+   *
+   * @async
+   * @function deleteNode
+   * @param {string} id - Node ID.
+   */
+  const deleteNode = async (id) => {
+    await deleteProjectFile(id);
+    fetchTree();
+  };
+
+    /**
+   * Moves a node to a new parent folder.
+   *
+   * @async
+   * @function moveNode
+   * @param {string} id - Node ID.
+   * @param {string} newParentId - New parent folder ID.
+   * @returns {Promise&lt;void>} Resolves when the node is moved and tree updated.
+   */
+  const moveNode = async (id, newParentId) => {
+    await moveProjectFile(id, newParentId);
+    fetchTree();
+  };
+
+  return (
+    &lt;DndProvider backend={HTML5Backend}>
+      &lt;Box sx={{ height: "100%", display: "flex", flexDirection: "column" }}>
+        &lt;Typography variant="h6" sx={{ mb: 2 }}>
+          📂 Project
+        &lt;/Typography>
+
+        {/* Form for creating new file/folder */}
+        &lt;Box sx={{ display: "flex", flexDirection: "column", gap: 1 }}>
+          &lt;TextField
+            size="small"
+            label="Name"
+            value={newName}
+            onChange={(e) => setNewName(e.target.value)}
+          />
+          &lt;FormControl size="small">
+            &lt;InputLabel>Type&lt;/InputLabel>
+            &lt;Select
+              value={newType}
+              label="Type"
+              onChange={(e) => setNewType(e.target.value)}
+            >
+              &lt;MenuItem value="folder">Folder&lt;/MenuItem>
+              &lt;MenuItem value="file">File&lt;/MenuItem>
+            &lt;/Select>
+          &lt;/FormControl>
+          {newType === "file" &amp;&amp; (
+            &lt;TextField
+              size="small"
+              label="Initial Content"
+              multiline
+              rows={3}
+              value={newContent}
+              onChange={(e) => setNewContent(e.target.value)}
+            />
+          )}
+          &lt;Button variant="contained" onClick={createNode}>
+            ➕ Create {newType === "file" ? "File" : "Folder"}
+          &lt;/Button>
+        &lt;/Box>
+
+        {/* Render file tree */}
+        &lt;Box sx={{ mt: 2, flex: 1, overflowY: "auto" }}>
+          {tree.map((node) => (
+            &lt;FileNode
+              key={node._id}
+              node={node}
+              onOpen={onOpenFile}
+              onRename={renameNode}
+              onDelete={deleteNode}
+              onMove={moveNode}
+            />
+          ))}
+        &lt;/Box>
+      &lt;/Box>
+    &lt;/DndProvider>
+  );
+};
+
+export default FileTree;
+</code></pre>
+        </article>
+    </section>
+
+
+
+
+</div>
+
+<nav>
+    <h2><a href="index.html">Home</a></h2><h3>Modules</h3><ul><li><a href="babel.module_config.html">babel.config</a></li><li><a href="eslint.module_config.html">eslint.config</a></li><li><a href="jest.module_config.html">jest.config</a></li><li><a href="jest.module_setup.html">jest.setup</a></li><li><a href="module-ColorModeContext.html">ColorModeContext</a></li><li><a href="module-ThemeWrapper.html">ThemeWrapper</a></li><li><a href="module-auth_roles.html">auth/roles</a></li><li><a href="module-auth_useFirebaseAuth.html">auth/useFirebaseAuth</a></li><li><a href="module-components_AssistantSidebar.html">components/AssistantSidebar</a></li><li><a href="module-components_AuthProviderButton.html">components/AuthProviderButton</a></li><li><a href="module-components_Column.html">components/Column</a></li><li><a href="module-components_ColumnDroppable.html">components/ColumnDroppable</a></li><li><a href="module-components_EditorPanel.html">components/EditorPanel</a></li><li><a href="module-components_ErrorBoundaryWrapper.html">components/ErrorBoundaryWrapper</a></li><li><a href="module-components_FileTree.html">components/FileTree</a></li><li><a href="module-components_Footer.html">components/Footer</a></li><li><a href="module-components_FormCard.html">components/FormCard</a></li><li><a href="module-components_Input.html">components/Input</a></li><li><a href="module-components_KanbanModals.html">components/KanbanModals</a></li><li><a href="module-components_KanbanOverlay.html">components/KanbanOverlay</a></li><li><a href="module-components_KanbanTaskPreview.html">components/KanbanTaskPreview</a></li><li><a href="module-components_KanbanUtils.html">components/KanbanUtils</a></li><li><a href="module-components_Loading.html">components/Loading</a></li><li><a href="module-components_LocalTaskPanel.html">components/LocalTaskPanel</a></li><li><a href="module-components_Logo.html">components/Logo</a></li><li><a href="module-components_OutputPanel.html">components/OutputPanel</a></li><li><a href="module-components_PersonalTaskPreview.html">components/PersonalTaskPreview</a></li><li><a href="module-components_PersonalTasksPanel.html">components/PersonalTasksPanel</a></li><li><a href="module-components_ProjectSelector.html">components/ProjectSelector</a></li><li><a href="module-components_ProjectSummaryDashboard.html">components/ProjectSummaryDashboard</a></li><li><a href="module-components_RedirectHandler.html">components/RedirectHandler</a></li><li><a href="module-components_SortableTask.html">components/SortableTask</a></li><li><a href="module-components_SuspenseWrapper.html">components/SuspenseWrapper</a></li><li><a href="module-components_TaskCard.html">components/TaskCard</a></li><li><a href="module-components_TaskComments.html">components/TaskComments</a></li><li><a href="module-components_TaskFilters.html">components/TaskFilters</a></li><li><a href="module-components_TerminalPanel.html">components/TerminalPanel</a></li><li><a href="module-components_UserProfilePanel.html">components/UserProfilePanel</a></li><li><a href="module-components_modals_AddKanbanTaskModal.html">components/modals/AddKanbanTaskModal</a></li><li><a href="module-components_modals_AddTaskModal.html">components/modals/AddTaskModal</a></li><li><a href="module-components_modals_DeleteTaskModal.html">components/modals/DeleteTaskModal</a></li><li><a href="module-components_modals_EditLocalTaskModal.html">components/modals/EditLocalTaskModal</a></li><li><a href="module-components_modals_EditTaskModal.html">components/modals/EditTaskModal</a></li><li><a href="module-components_modals_LogoutModal.html">components/modals/LogoutModal</a></li><li><a href="module-components_modals_NewKanbanListModal.html">components/modals/NewKanbanListModal</a></li><li><a href="module-components_modals_NewListModal.html">components/modals/NewListModal</a></li><li><a href="module-components_modals_NewProjectModal.html">components/modals/NewProjectModal</a></li><li><a href="module-components_modals_ProjectDetailModal.html">components/modals/ProjectDetailModal</a></li><li><a href="module-components_modals_TaskDetailModal.html">components/modals/TaskDetailModal</a></li><li><a href="module-components_navbar_NavCategory.html">components/navbar/NavCategory</a></li><li><a href="module-components_navbar_Navbar.html">components/navbar/Navbar</a></li><li><a href="module-components_navbar_navDropdowns.html">components/navbar/navDropdowns</a></li><li><a href="module-context_AuthContext.html">context/AuthContext</a></li><li><a href="module-context_AuthProvider.html">context/AuthProvider</a></li><li><a href="module-context_ModalContext.html">context/ModalContext</a></li><li><a href="module-context_ModalProvider.html">context/ModalProvider</a></li><li><a href="module-firebase_auth.html">firebase/auth</a></li><li><a href="module-firebase_authUtils.html">firebase/authUtils</a></li><li><a href="module-hooks_init.html">hooks/init</a></li><li><a href="module-hooks_useAuth.html">hooks/useAuth</a></li><li><a href="module-hooks_useModal.html">hooks/useModal</a></li><li><a href="module-hooks_useUser.html">hooks/useUser</a></li><li><a href="module-hooks_utilsAuth.html">hooks/utilsAuth</a></li><li><a href="module-layouts_PrivateLayout.html">layouts/PrivateLayout</a></li><li><a href="module-layouts_PublicLayout.html">layouts/PublicLayout</a></li><li><a href="module-layouts_RootLayout.html">layouts/RootLayout</a></li><li><a href="module-main.html">main</a></li><li><a href="module-pages_AdminUserPanel.html">pages/AdminUserPanel</a></li><li><a href="module-pages_CodeReviewPanel.html">pages/CodeReviewPanel</a></li><li><a href="module-pages_CollaborativeCodeEditor.html">pages/CollaborativeCodeEditor</a></li><li><a href="module-pages_Dashboard.html">pages/Dashboard</a></li><li><a href="module-pages_KanbanBoard.html">pages/KanbanBoard</a></li><li><a href="module-pages_LocalTaskBoard.html">pages/LocalTaskBoard</a></li><li><a href="module-pages_MyProjects.html">pages/MyProjects</a></li><li><a href="module-pages_NotFound.html">pages/NotFound</a></li><li><a href="module-pages_PersonalTasksBoard.html">pages/PersonalTasksBoard</a></li><li><a href="module-pages_Profile.html">pages/Profile</a></li><li><a href="module-pages_ProjectDashboard.html">pages/ProjectDashboard</a></li><li><a href="module-pages_ProjectDocumentation.html">pages/ProjectDocumentation</a></li><li><a href="module-pages_ProjectManagementDashboard.html">pages/ProjectManagementDashboard</a></li><li><a href="module-pages_Settings.html">pages/Settings</a></li><li><a href="module-pages_TasksPage.html">pages/TasksPage</a></li><li><a href="module-pages_TeamChatModule.html">pages/TeamChatModule</a></li><li><a href="module-pages_docs_QuickStartGuide.html">pages/docs/QuickStartGuide</a></li><li><a href="module-pages_public__HelpCenter.html">pages/public//HelpCenter</a></li><li><a href="module-pages_public_AIAssistant.html">pages/public/AIAssistant</a></li><li><a href="module-pages_public_Blog.html">pages/public/Blog</a></li><li><a href="module-pages_public_ContactSupport.html">pages/public/ContactSupport</a></li><li><a href="module-pages_public_Features.html">pages/public/Features</a></li><li><a href="module-pages_public_ForDevelopers.html">pages/public/ForDevelopers</a></li><li><a href="module-pages_public_Home.html">pages/public/Home</a></li><li><a href="module-pages_public_PrivacyPolicy.html">pages/public/PrivacyPolicy</a></li><li><a href="module-pages_public_SignIn.html">pages/public/SignIn</a></li><li><a href="module-pages_public_SignUp.html">pages/public/SignUp</a></li><li><a href="module-pages_public_TermsOfService.html">pages/public/TermsOfService</a></li><li><a href="module-pages_public_Testimonials.html">pages/public/Testimonials</a></li><li><a href="module-routes_AdminDashboardRoutes.html">routes/AdminDashboardRoutes</a></li><li><a href="module-routes_AdminRoutes.html">routes/AdminRoutes</a></li><li><a href="module-routes_DashboardRoutes.html">routes/DashboardRoutes</a></li><li><a href="module-routes_IndexRoute.html">routes/IndexRoute</a></li><li><a href="module-routes_ModalRoutes.html">routes/ModalRoutes</a></li><li><a href="module-routes_ProtectedRoute.html">routes/ProtectedRoute</a></li><li><a href="module-routes_PublicRoutes.html">routes/PublicRoutes</a></li><li><a href="module-routes_Routes.html">routes/Routes</a></li><li><a href="module-services_assistantService.html">services/assistantService</a></li><li><a href="module-services_auth_handleLoginRedirect.html">services/auth/handleLoginRedirect</a></li><li><a href="module-services_auth_logoutRequest.html">services/auth/logoutRequest</a></li><li><a href="module-services_auth_roleUtils.html">services/auth/roleUtils</a></li><li><a href="module-services_auth_signInAuth.html">services/auth/signInAuth</a></li><li><a href="module-services_auth_signUpAuth.html">services/auth/signUpAuth</a></li><li><a href="module-services_avatarService.html">services/avatarService</a></li><li><a href="module-services_editorServices.html">services/editorServices</a></li><li><a href="module-services_fileService.html">services/fileService</a></li><li><a href="module-services_kanbanService.html">services/kanbanService</a></li><li><a href="module-services_profileService.html">services/profileService</a></li><li><a href="module-services_projectService.html">services/projectService</a></li><li><a href="module-services_taskService.html">services/taskService</a></li><li><a href="module-services_userService.html">services/userService</a></li><li><a href="module-theme.html">theme</a></li><li><a href="module-utils_authUtils.html">utils/authUtils</a></li><li><a href="module-utils_axiosConfig.html">utils/axiosConfig</a></li><li><a href="module-utils_cleanMentorOutput.html">utils/cleanMentorOutput</a></li><li><a href="module-utils_getRedirectForRole.html">utils/getRedirectForRole</a></li><li><a href="module-utils_monacoConfig.html">utils/monacoConfig</a></li><li><a href="module-utils_syncUserAndRedirect.html">utils/syncUserAndRedirect</a></li><li><a href="module-utils_taskUtils.html">utils/taskUtils</a></li><li><a href="module-utils_userToken.html">utils/userToken</a></li><li><a href="module-views_unauthorized.html">views/unauthorized</a></li><li><a href="vite.module_config.html">vite.config</a></li></ul><h3>Classes</h3><ul><li><a href="-_src_server_project.ts_-ConfiguredProject2.html">ConfiguredProject2</a></li><li><a href="-_src_server_project.ts_-ExternalProject2.html">ExternalProject2</a></li><li><a href="-_src_server_project.ts_-InferredProject2.html">InferredProject2</a></li><li><a href="-_src_server_project.ts_-Project3.html">Project3</a></li><li><a href="-_src_server_project.ts_-_AutoImportProviderProject.html">_AutoImportProviderProject</a></li><li><a href="-_src_services_textChanges.ts_-ChangeTracker.html">ChangeTracker</a></li><li><a href="module-components_ErrorBoundaryWrapper-ErrorBoundaryWrapper.html">ErrorBoundaryWrapper</a></li></ul><h3>Events</h3><ul><li><a href="module-utils_userToken.html#~event:onIdTokenChanged">onIdTokenChanged</a></li></ul><h3>Global</h3><ul><li><a href="global.html#renderWithRouter">renderWithRouter</a></li></ul>
+</nav>
+
+<br class="clear">
+
+<footer>
+    Documentation generated by <a href="https://github.com/jsdoc/jsdoc">JSDoc 4.0.5</a> on Wed Feb 11 2026 23:56:34 GMT+0000 (Coordinated Universal Time)
+</footer>
+
+<script> prettyPrint(); </script>
+<script src="scripts/linenumber.js"> </script>
+</body>
+</html>
