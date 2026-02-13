@@ -22,26 +22,27 @@ export default defineConfig(({ mode }) => {
       monacoEditorPlugin.default({}), // Integrate Monaco editor
     ],
 
+    // 🔹 Base path (important for production in Vercel)
+    base: "/", // asegura que los assets se sirvan correctamente
+
     // 🔹 Development server configuration
     server: {
-      host: "0.0.0.0", // Allow external access
-      port: 5173, // Default dev server port
-      allowedHosts: ["localhost", "app.local"], // Restrict allowed hosts
+      host: "0.0.0.0",
+      port: 5173,
+      allowedHosts: ["localhost", "app.local"],
       hmr: {
-        protocol: "ws", // Hot Module Replacement over WebSocket
-        host: "localhost", // Replace with machine IP if accessed externally
+        protocol: "ws",
+        host: "localhost",
         clientPort: 5173,
       },
       proxy:
         mode === "development"
           ? {
-              // API proxy for backend requests
               "/api": {
                 target: process.env.VITE_EXPRESS_URL,
                 changeOrigin: true,
                 secure: false,
               },
-              // WebSocket proxy for Socket.IO
               "/socket.io": {
                 target: process.env.VITE_SOCKET_URL,
                 ws: true,
@@ -53,16 +54,14 @@ export default defineConfig(({ mode }) => {
 
     // 🔹 Dependency optimization
     optimizeDeps: {
-      exclude: ["monaco-editor", "eslint4b"], // Exclude heavy/unsupported deps
+      exclude: ["monaco-editor", "eslint4b"],
     },
 
     // 🔹 Build configuration
     build: {
-      sourcemap: false, // Disable source maps for production
+      sourcemap: false,
       rollupOptions: {
-        external: ["monaco-editor/esm/vs/editor/editor.api.js"], // Avoid bundling Monaco API
       },
     },
   };
 });
-
