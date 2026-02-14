@@ -59,9 +59,13 @@ export default defineConfig(({ mode }) => {
 
     // 🔹 Build configuration
     build: {
-      sourcemap: false,
-      rollupOptions: {
+  rollupOptions: {
+    output: {
+      manualChunks: {
+        monaco: ["monaco-editor"],
       },
     },
+  },
+}
   };
 });

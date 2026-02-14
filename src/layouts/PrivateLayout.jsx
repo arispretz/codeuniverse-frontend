@@ -4,7 +4,6 @@
  * - AppBar with logo, workspace title, user greeting, avatar, theme toggle, and user menu
  * - Sidebar navigation with role-based items
  * - Main content area with React Router Outlet
- * - Logout modal for session termination
  *
  * @module layouts/PrivateLayout
  */
@@ -41,7 +40,6 @@ import { Link, useNavigate, Outlet } from "react-router-dom";
 import ThemeToggleButton from "../ThemeToggleButton";
 import Logo from "../components/Logo.jsx";
 import { useTheme } from "@mui/material/styles";
-import LogoutModal from "../components/modals/LogoutModal.jsx";
 import { signOut } from "firebase/auth";
 import { auth } from "../firebase/auth.js";
 import { AuthContext } from "../context/AuthContext.jsx";
@@ -101,7 +99,7 @@ const getSidebarItems = (role) => {
     default:
       return guestExtras;
   }
-  };
+};
 
 /**
  * PrivateLayout Component
@@ -127,8 +125,6 @@ export function PrivateLayout({ children }) {
   const theme = useTheme();
   const navigate = useNavigate();
   const avatarButtonRef = useRef();
-  const [logoutOpen, setLogoutOpen] = useState(false);
-  const [logoutLoading, setLogoutLoading] = useState(false);
 
   const handleMenuOpen = (event) => setAnchorEl(event.currentTarget);
   const handleMenuClose = () => {
@@ -144,7 +140,6 @@ export function PrivateLayout({ children }) {
    * @returns {Promise<void>}
    */
   const handleLogout = async () => {
-    setLogoutLoading(true);
     try {
       await signOut(auth);
       localStorage.removeItem("token");
@@ -154,9 +149,6 @@ export function PrivateLayout({ children }) {
       navigate("/sign-in");
     } catch (err) {
       console.error("Logout error:", err);
-    } finally {
-      setLogoutLoading(false);
-      setLogoutOpen(false);
     }
   };
 
@@ -240,7 +232,7 @@ export function PrivateLayout({ children }) {
             <MenuItem
               onClick={() => {
                 handleMenuClose();
-                setTimeout(() => setLogoutOpen(true), 100);
+                navigate("/logout"); // 👈 now handled via route-based modal
               }}
               sx={{ color: "error.main" }}
               autoFocus={false}
@@ -254,7 +246,7 @@ export function PrivateLayout({ children }) {
         </Toolbar>
       </AppBar>
 
-            {/* Sidebar Drawer with role-based navigation */}
+      {/* Sidebar Drawer with role-based navigation */}
       <Drawer
         variant="permanent"
         sx={{
@@ -267,7 +259,7 @@ export function PrivateLayout({ children }) {
         }}
       >
         <Toolbar />
-        <List sx={{ mt: 2 }}>
+                <List sx={{ mt: 2 }}>
           {sidebarItems.map(({ label, to, icon }, index) => (
             <ListItemButton key={index} component={Link} to={to}>
               <ListItemIcon>{icon}</ListItemIcon>
@@ -301,14 +293,6 @@ export function PrivateLayout({ children }) {
           </Box>
         </Box>
       </Box>
-
-      {/* Logout Modal */}
-      <LogoutModal
-        open={logoutOpen}
-        onConfirm={handleLogout}
-        onCancel={() => setLogoutOpen(false)}
-        loading={logoutLoading}
-      />
     </Box>
   );
 }
