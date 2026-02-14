@@ -18,14 +18,14 @@ export default defineConfig(({ mode }) => {
   return {
     // 🔹 Plugins
     plugins: [
-      react(), // Enable React fast refresh and JSX support
-      monacoEditorPlugin.default({}), // Integrate Monaco editor
+      react(),
+      monacoEditorPlugin.default({}), 
     ],
 
-    // 🔹 Base path (important for production in Vercel)
-    base: "/", // asegura que los assets se sirvan correctamente
+    // 🔹 Base path 
+    base: "/", 
 
-    // 🔹 Development server configuration
+    // 🔹 Development server
     server: {
       host: "0.0.0.0",
       port: 5173,
@@ -59,13 +59,14 @@ export default defineConfig(({ mode }) => {
 
     // 🔹 Build configuration
     build: {
-  rollupOptions: {
-    output: {
-      manualChunks: {
-        monaco: ["monaco-editor"],
+      outDir: "dist", 
+      rollupOptions: {
+        output: {
+          manualChunks: {
+            monaco: ["monaco-editor"],
+          },
+        },
       },
     },
-  },
-}
   };
 });
