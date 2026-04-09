@@ -17,8 +17,6 @@ import { useTheme } from "@mui/material/styles";
 import {
   Box,
   Grid,
-  Snackbar,
-  Alert,
   Button,
   LinearProgress,
   Typography,
@@ -100,17 +98,6 @@ const KanbanBoard = () => {
   const [platformUsers, setPlatformUsers] = useState([]);
 
   const [activeProjectId, setActiveProjectId] = useState(projectId || "");
-
-  // Snackbar notifications
-  const [snackbarOpen, setSnackbarOpen] = useState(false);
-  const [snackbarMessage, setSnackbarMessage] = useState("");
-  const [snackbarSeverity, setSnackbarSeverity] = useState("success");
-
-  const showSnackbar = (msg, sev = "success") => {
-    setSnackbarMessage(msg);
-    setSnackbarSeverity(sev);
-    setSnackbarOpen(true);
-  };
 
   // Modals state
   const [activeModal, setActiveModal] = useState(null);
@@ -243,16 +230,12 @@ const KanbanBoard = () => {
     }
   };
 
-  const deleteTask = async (task) => {
-    try {
-      await deleteKanbanTask(task._id);
-      setAllTasks((prev) => prev.filter((t) => t._id !== task._id));
-      enqueueSnackbar(`Task "${task.title}" deleted ✅`, { variant: "success" });
-    } catch (err) {
-      console.error("Error deleting task:", err);
-      enqueueSnackbar("Error deleting the task", { variant: "error" });
-    }
-  };
+  const deleteTask = (task) => {
+  setAllTasks((prev) => prev.filter((t) => t._id !== task._id));
+  enqueueSnackbar(`Task "${task.title}" deleted ✅`, { variant: "success" });
+
+  window.dispatchEvent(new Event("tasksUpdated"));
+};
 
   /**
    * Socket.io effects for real-time task updates
@@ -391,6 +374,48 @@ const KanbanBoard = () => {
     }
   }, [activeProjectId, user]);
 
+ const handleTaskAdded = (newTask) => {
+  const normalized = {
+    ...newTask,
+    status: normalizeStatus(newTask.status),
+  };
+  setAllTasks((prev) => [normalized, ...prev]);
+  enqueueSnackbar(`Task "${newTask.title}" created ✅`, { variant: "success" });
+
+  window.dispatchEvent(new Event("tasksUpdated"));
+};
+
+const handleTaskUpdated = async (updatedTask) => {
+  try {
+    const saved = await updateKanbanTask(updatedTask._id, updatedTask);
+    const normalized = {
+      ...saved,
+      status: normalizeStatus(saved.status),
+    };
+    setAllTasks((prev) =>
+      prev.map((t) => (t._id === normalized._id ? normalized : t))
+    );
+    enqueueSnackbar(`Task "${saved.title}" updated ✅`, { variant: "success" });
+
+    window.dispatchEvent(new Event("tasksUpdated"));
+  } catch (err) {
+    console.error("Error updating task:", err);
+    enqueueSnackbar("Error updating task ❌", { variant: "error" });
+  }
+};
+  useEffect(() => {
+  const listener = () => {
+    fetchProjectTasks();
+  };
+
+  window.addEventListener("tasksUpdated", listener);
+
+  return () => {
+    window.removeEventListener("tasksUpdated", listener);
+  };
+}, [activeProjectId, user]);
+
+
   // --- Render ---
   return (
     <Box sx={{ bgcolor: theme.palette.background.default, minHeight: "100vh", p: 2 }}>
@@ -486,28 +511,15 @@ const KanbanBoard = () => {
         viewingTask={viewingTask}
         setViewingTask={setViewingTask}
         platformUsers={platformUsers}
-        handleTaskUpdated={updateKanbanTask}
+        handleTaskUpdated={handleTaskUpdated}
         editingTask={editingTask}
         setEditingTask={setEditingTask}
         handleDelete={deleteTask}
+        onTaskAdded={handleTaskAdded}
       />
-
-      <Snackbar
-        open={snackbarOpen}
-        autoHideDuration={4000}
-        onClose={() => setSnackbarOpen(false)}
-        anchorOrigin={{ vertical: "bottom", horizontal: "center" }}
-      >
-        <Alert
-          onClose={() => setSnackbarOpen(false)}
-          severity={snackbarSeverity}
-          sx={{ width: "100%" }}
-        >
-          {snackbarMessage}
-        </Alert>
-      </Snackbar>
     </Box>
   );
 };
 
 export default KanbanBoard;
+

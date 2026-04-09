@@ -14,8 +14,6 @@ import {
   ListItemText,
   Box,
   IconButton,
-  Snackbar,
-  Alert,
   Button,
   Chip,
   CircularProgress,
@@ -34,7 +32,6 @@ import { useParams, useNavigate } from "react-router-dom";
 import {
   getLocalTasks,
   updateLocalTask,
-  deleteLocalTask,
 } from "../services/taskService.js";
 import { getPublicUsers } from "../services/userService.js";
 import TaskFilters from "../components/TaskFilters.jsx";
@@ -45,12 +42,14 @@ import DeleteTaskModal from "../components/modals/DeleteTaskModal.jsx";
 import { isUserAssigned } from "../utils/taskUtils.js";
 import { AuthContext } from "../context/AuthContext.jsx";
 import { getProjects, getLocalLists } from "../services/projectService.js";
+import { useSnackbar } from "notistack";
 
 const LocalTaskBoard = () => {
   const { id: projectId } = useParams();
   const navigate = useNavigate();
   const [user] = useAuthState(auth);
   const { role, userMongoId, firebaseUid } = useContext(AuthContext);
+  const { enqueueSnackbar } = useSnackbar();
 
   // States
   const [projects, setProjects] = useState([]);
@@ -82,17 +81,6 @@ const LocalTaskBoard = () => {
   });
 
   const [loading, setLoading] = useState(false);
-
-  // Snackbar
-  const [snackbarOpen, setSnackbarOpen] = useState(false);
-  const [snackbarMessage, setSnackbarMessage] = useState("");
-  const [snackbarSeverity, setSnackbarSeverity] = useState("success");
-
-  const showSnackbar = (message, severity = "success") => {
-    setSnackbarMessage(message);
-    setSnackbarSeverity(severity);
-    setSnackbarOpen(true);
-  };
 
   // Load users
   useEffect(() => {
@@ -149,7 +137,7 @@ const LocalTaskBoard = () => {
       const arr = Array.isArray(data) ? data : data.items || [];
       setAllTasks(arr);
     } catch {
-      showSnackbar("Error fetching local tasks", "error");
+      enqueueSnackbar("Error fetching local tasks ❌", { variant: "error" });
       setAllTasks([]);
     } finally {
       setLoading(false);
@@ -192,7 +180,7 @@ const LocalTaskBoard = () => {
     }
     setVisibleTasks(arr);
   }, [allTasks, selectedUser, priorityFilter, sortBy, sortOrder]);
-
+  
   // Handlers
   const handleEdit = (task) => {
     setSelectedTask(task);
@@ -203,6 +191,7 @@ const LocalTaskBoard = () => {
       status: task.status || "todo",
       deadline: task.deadline || "",
     });
+    setSelectedListId(task.listId); 
     setOpenEdit(true);
   };
 
@@ -213,14 +202,18 @@ const LocalTaskBoard = () => {
         selectedTask._id,
         form
       );
+
       setAllTasks((prev) =>
         prev.map((t) => (t._id === selectedTask._id ? updatedTask : t))
       );
+
       setOpenEdit(false);
       setSelectedTask(null);
-      showSnackbar("Task updated successfully ✅", "success");
+      enqueueSnackbar("Task updated successfully ✅", { variant: "success" });
+
+      window.dispatchEvent(new Event("tasksUpdated"));
     } catch {
-      showSnackbar("Error updating local task", "error");
+      enqueueSnackbar("Error updating local task ❌", { variant: "error" });
     }
   };
 
@@ -230,17 +223,21 @@ const LocalTaskBoard = () => {
   };
 
   const handleDelete = async () => {
-    try {
-      await deleteLocalTask(selectedTask._id);
-      setAllTasks((prev) => prev.filter((t) => t._id !== selectedTask._id));
-      showSnackbar("Task deleted ✅", "success");
-    } catch {
-      showSnackbar("Error deleting local task", "error");
-    } finally {
-      setOpenConfirmDelete(false);
-      setSelectedTask(null);
-    }
-  };
+  try {
+    await deleteLocalTask(selectedTask._id);
+
+    setAllTasks((prev) => prev.filter((t) => t._id !== selectedTask._id));
+
+    enqueueSnackbar(`Task "${selectedTask.title}" deleted ✅`, { variant: "success" });
+
+    window.dispatchEvent(new Event("tasksUpdated"));
+  } catch {
+    enqueueSnackbar("Error deleting local task ❌", { variant: "error" });
+  } finally {
+    setOpenConfirmDelete(false);
+    setSelectedTask(null);
+  }
+};
 
   // Permissions
   const canEditOrDelete = (task) => {
@@ -273,14 +270,13 @@ const LocalTaskBoard = () => {
         </Select>
       </FormControl>
 
-      {/* Only manager or admin can create tasks */}
       {(role === "manager" || role === "admin") && (
         <Button
           variant="contained"
           sx={{ mb: 2 }}
           onClick={() => setOpenAdd(true)}
         >
-                   ➕ Create Task
+          ➕ Create Task
         </Button>
       )}
 
@@ -292,14 +288,13 @@ const LocalTaskBoard = () => {
         projectId={projectId}
       />
 
-      {/* Filters */}
       <TaskFilters
         lists={lists}
         selectedListId={selectedListId}
         setSelectedListId={setSelectedListId}
         priorityFilter={priorityFilter}
         setPriorityFilter={setPriorityFilter}
-        userOptions={projects.find(p => p._id === projectId)?.members || []}  
+        userOptions={projects.find((p) => p._id === projectId)?.members || []}
         selectedUser={selectedUser}
         setSelectedUser={setSelectedUser}
         fetchTasks={fetchTasks}
@@ -410,24 +405,9 @@ const LocalTaskBoard = () => {
         task={selectedTask}
         onTaskDeleted={(deletedTask) => {
           setAllTasks((prev) => prev.filter((t) => t._id !== deletedTask._id));
-          showSnackbar("Task deleted ✅", "success");
+          enqueueSnackbar(`Task "${deletedTask.title}" deleted ✅`, { variant: "success" });
         }}
       />
-
-      <Snackbar
-        open={snackbarOpen}
-        autoHideDuration={4000}
-        onClose={() => setSnackbarOpen(false)}
-        anchorOrigin={{ vertical: "bottom", horizontal: "center" }}
-      >
-        <Alert
-          onClose={() => setSnackbarOpen(false)}
-          severity={snackbarSeverity}
-          sx={{ width: "100%" }}
-        >
-          {snackbarMessage}
-        </Alert>
-      </Snackbar>
     </Box>
   );
 };

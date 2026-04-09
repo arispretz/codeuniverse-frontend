@@ -52,7 +52,7 @@ import DeleteTaskModal from "../components/modals/DeleteTaskModal.jsx";
 import { AuthContext } from "../context/AuthContext.jsx";
 import { isUserAssigned } from "../utils/taskUtils.js";
 
-import { getProjects } from "../services/projectService.js";
+import { getProjectsFull } from "../services/projectService.js";
 import { deleteKanbanTask, updateKanbanTask } from "../services/kanbanService.js";
 import { deleteLocalTask, updateLocalTask } from "../services/taskService.js";
 
@@ -101,7 +101,7 @@ const ProjectManagementDashboard = () => {
   const fetchProjects = async () => {
     try {
       if (!user) return;
-      const data = await getProjects({ page, limit: 6 });
+      const data = await getProjectsFull({ page, limit: 6 });
       setProjects(data.projects || []);
       setTotalPages(data.totalPages || 1);
     } catch {
@@ -131,35 +131,61 @@ const ProjectManagementDashboard = () => {
   const handleProjectSubmit = (newProject) => {
     setProjects((prev) => [...prev, newProject]);
   };
+  
   const handleEdit = (task) => {
-    setSelectedTask(task);
-    setForm({
-      title: task.title,
-      description: task.description,
-      priority: task.priority || "",
-      status: task.status || "todo",
-      deadline: task.deadline || "",
-    });
-    setOpenEdit(true);
-  };
+  setSelectedTask(task);
+  setForm({
+    title: task.title,
+    description: task.description,
+    priority: task.priority || "",
+    status: task.status || "todo",
+    deadline: task.deadline || "",
+  });
+  setSelectedListId(task.listId);
+  setOpenEdit(true);
+};
 
   const handleUpdate = async () => {
-    try {
-      const updatedTask = await updateLocalTask(
-        selectedListId,
-        selectedTask._id,
-        form
-      );
-      setAllTasks((prev) =>
-        prev.map((t) => (t._id === selectedTask._id ? updatedTask : t))
-      );
-      setOpenEdit(false);
-      setSelectedTask(null);
-      showSnackbar("Task updated successfully ✅", "success");
-    } catch {
-      showSnackbar("Error updating local task", "error");
-    }
-  };
+  try {
+    const updatedTask = await updateLocalTask(
+      selectedListId,
+      selectedTask._id,
+      form
+    );
+
+    setAllTasks((prev) =>
+      prev.map((t) => (t._id === selectedTask._id ? updatedTask : t))
+    );
+
+    setProjects((prev) =>
+      prev.map((proj) =>
+        proj._id === selectedProject
+          ? {
+              ...proj,
+              localLists: proj.localLists.map((list) =>
+                list._id === selectedListId
+                  ? {
+                      ...list,
+                      tasks: list.tasks.map((t) =>
+                        t._id === selectedTask._id ? updatedTask : t
+                      ),
+                    }
+                  : list
+              ),
+            }
+          : proj
+      )
+    );
+
+    setOpenEdit(false);
+    setSelectedTask(null);
+    showSnackbar("Task updated successfully ✅", "success");
+
+    window.dispatchEvent(new Event("tasksUpdated"));
+  } catch {
+    showSnackbar("Error updating local task ❌", "error");
+  }
+};
 
   const handleView = (task) => {
     setSelectedTask(task);
@@ -167,17 +193,51 @@ const ProjectManagementDashboard = () => {
   };
 
   const handleDelete = async () => {
-    try {
-      await deleteLocalTask(selectedTask._id);
-      setAllTasks((prev) => prev.filter((t) => t._id !== selectedTask._id));
-      showSnackbar("Task deleted ✅", "success");
-    } catch {
-      showSnackbar("Error deleting local task", "error");
-    } finally {
-      setOpenConfirmDelete(false);
-      setSelectedTask(null);
-    }
+  try {
+    await deleteLocalTask(selectedTask._id);
+
+    setAllTasks((prev) => prev.filter((t) => t._id !== selectedTask._id));
+
+    setProjects((prev) =>
+      prev.map((proj) =>
+        proj._id === selectedProject
+          ? {
+              ...proj,
+              localLists: proj.localLists.map((list) =>
+                list._id === selectedListId
+                  ? {
+                      ...list,
+                      tasks: list.tasks.filter((t) => t._id !== selectedTask._id),
+                    }
+                  : list
+              ),
+            }
+          : proj
+      )
+    );
+
+    showSnackbar("Task deleted ✅", "success");
+
+    window.dispatchEvent(new Event("tasksUpdated"));
+  } catch {
+    showSnackbar("Error deleting local task ❌", "error");
+  } finally {
+    setOpenConfirmDelete(false);
+    setSelectedTask(null);
+  }
+};
+
+  useEffect(() => {
+    const listener = () => {
+      fetchProjects(); 
+    };
+
+    window.addEventListener("tasksUpdated", listener);
+
+  return () => {
+    window.removeEventListener("tasksUpdated", listener);
   };
+}, []);
 
   const canEditOrDelete = (task) => {
     if (role === "manager" || role === "admin") return true;
@@ -508,7 +568,22 @@ const ProjectManagementDashboard = () => {
           enqueueSnackbar(`Kanban task "${task.title}" created successfully ✅`, {
             variant: "success",
           });
-          fetchProjects();
+          setProjects((prev) =>
+            prev.map((proj) =>
+              proj._id === selectedProject
+                ? {
+                    ...proj,
+                    kanbanLists: proj.kanbanLists.map((list) =>
+                      list._id === selectedList
+                        ? { ...list, tasks: [...list.tasks, task] }
+                        : list
+                    ),
+                  }
+                : proj
+            )
+          );
+
+          window.dispatchEvent(new Event("tasksUpdated"));
         }}
         listId={selectedList}
         projectId={selectedProject}
@@ -521,11 +596,27 @@ const ProjectManagementDashboard = () => {
           enqueueSnackbar(`Local task "${task.title}" created successfully ✅`, {
             variant: "success",
           });
-          fetchProjects();
+          setProjects((prev) =>
+            prev.map((proj) =>
+              proj._id === selectedProject
+                ? {
+                    ...proj,
+                    localLists: proj.localLists.map((list) =>
+                      list._id === selectedList
+                        ? { ...list, tasks: [...list.tasks, task] }
+                        : list
+                    ),
+                  }
+                : proj
+            )
+          );
+
+          window.dispatchEvent(new Event("tasksUpdated"));
         }}
         listId={selectedList}
         projectId={selectedProject}
       />
+
             {/* Task management modals */}
       <TaskDetailModal
         open={openView}

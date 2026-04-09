@@ -50,31 +50,20 @@ import {
 import CloseIcon from "@mui/icons-material/Close";
 import { getPublicUsers } from "../../services/userService.js";
 import { createKanbanTask } from "../../services/kanbanService.js";
+import { useSnackbar } from "notistack";
 
-/**
- * AddKanbanTaskModal Component
- *
- * @function AddKanbanTaskModal
- * @param {Object} props - Component props.
- * @param {boolean} props.open - Controls whether the modal is open.
- * @param {Function} props.onClose - Callback to close the modal.
- * @param {Function} props.onTaskAdded - Callback triggered when a task is successfully added.
- * @param {string} props.listId - ID of the Kanban list where the task will be created.
- * @param {string} props.projectId - ID of the project associated with the task.
- * @returns {JSX.Element} Modal form for creating a Kanban task.
- */
 const AddKanbanTaskModal = ({ open, onClose, onTaskAdded, listId, projectId }) => {
+  const { enqueueSnackbar } = useSnackbar();
   const [form, setForm] = useState({
     title: "",
     description: "",
-    status: "todo", // normalized values: "todo", "in_progress", "review", "done"
-    assignedTo: "", // assigned user ID
-    priority: "medium", // values: "high", "medium", "low"
-    deadline: "", // date string, converted to ISO later
-    tags: [], // default empty array
+    status: "todo",
+    assignees: [],
+    priority: "medium",
+    deadline: "",
+    tags: [],
   });
 
-  const [error, setError] = useState("");
   const [users, setUsers] = useState([]);
 
   useEffect(() => {
@@ -83,116 +72,85 @@ const AddKanbanTaskModal = ({ open, onClose, onTaskAdded, listId, projectId }) =
         .then((data) => setUsers(data))
         .catch((err) => {
           console.error("❌ Error loading users:", err);
+          enqueueSnackbar("Error loading users ❌", { variant: "error" });
           setUsers([]);
         });
     }
-  }, [open]);
+  }, [open, enqueueSnackbar]);
 
-  /**
-   * Handles form field changes.
-   *
-   * @param {string} field - Field name to update.
-   * @param {string} value - New value for the field.
-   */
   const handleChange = (field, value) => {
     setForm((prev) => ({ ...prev, [field]: value }));
   };
 
-  /**
-   * Creates a new Kanban task by sending payload to backend.
-   *
-   * @async
-   * @param {Object} formData - Form data containing task details.
-   * @param {string} formData.title - Task title.
-   * @param {string} formData.description - Task description.
-   * @param {string} formData.status - Task status ("todo", "in_progress", "review", "done").
-   * @param {string} formData.assignedTo - ID of the assigned user.
-   * @param {string} formData.priority - Task priority ("high", "medium", "low").
-   * @param {string} [formData.deadline] - Optional deadline date string.
-   * @param {Array&lt;string>} [formData.tags] - Optional tags for the task.
-   * @returns {Promise&lt;void>} Resolves when the task is successfully created.
-   */
   const createTask = async (formData) => {
     try {
       const payload = {
-        title: formData.title,
-        description: formData.description,
-        status: formData.status,
+        title: formData.title.trim(),
+        description: formData.description.trim(),
+        status: formData.status || "todo",
         projectId,
         deadline: formData.deadline ? new Date(formData.deadline).toISOString() : null,
-        assignees: formData.assignedTo ? [formData.assignedTo] : [],
+        assignees: formData.assignees,
         priority: formData.priority,
         tags: formData.tags,
         source: "kanban",
       };
 
       const data = await createKanbanTask(listId, payload);
-      onTaskAdded(data);
+
+      if (onTaskAdded) {
+        onTaskAdded(data);
+      }
+
       onClose();
     } catch (err) {
       console.error("❌ Error creating Kanban task:", err.message);
-      setError("There was a problem creating the task.");
+      enqueueSnackbar("Error creating Kanban task ❌", { variant: "error" });
     }
   };
 
-  /**
-   * Validates form fields and triggers task creation.
-   *
-   * @async
-   * @returns {Promise&lt;void>} Resolves when validation passes and task is created.
-   */
   const handleSubmit = async () => {
-    const { title, description, assignedTo, status, priority, deadline } = form;
+    const { title, description, assignees, status, priority, deadline } = form;
 
     if (!title?.trim()) {
-      setError("⚠️ Title is required.");
+      enqueueSnackbar("⚠️ Title is required.", { variant: "warning" });
       return;
     }
-
     if (!description?.trim()) {
-      setError("⚠️ Description is required.");
+      enqueueSnackbar("⚠️ Description is required.", { variant: "warning" });
       return;
     }
-
-    if (!assignedTo) {
-      setError("⚠️ You must assign the task to a user.");
+    if (assignees.length === 0) {
+      enqueueSnackbar("⚠️ You must assign the task to at least one user.", { variant: "warning" });
       return;
     }
-
     if (!listId || !projectId) {
-      setError("⚠️ Missing project or list information.");
+      enqueueSnackbar("⚠️ Missing project or list information.", { variant: "warning" });
       return;
     }
 
     const validStatuses = ["todo", "in_progress", "review", "done"];
     if (!status || !validStatuses.includes(status)) {
-      setError("⚠️ Invalid task status.");
+      enqueueSnackbar("⚠️ Invalid task status.", { variant: "warning" });
       return;
     }
 
     const validPriorities = ["high", "medium", "low"];
     if (!priority || !validPriorities.includes(priority)) {
-      setError("⚠️ Priority must be high, medium, or low.");
+      enqueueSnackbar("⚠️ Priority must be high, medium, or low.", { variant: "warning" });
       return;
     }
 
     if (deadline &amp;&amp; isNaN(new Date(deadline).getTime())) {
-      setError("⚠️ Invalid deadline date.");
+      enqueueSnackbar("⚠️ Invalid deadline date.", { variant: "warning" });
       return;
     }
 
-    try {
-      await createTask(form);
-      setError("");
-    } catch (err) {
-      console.error("❌ Error creating task:", err);
-      setError("There was a problem creating the task.");
-    }
+    await createTask(form);
   };
 
   return (
     &lt;Modal open={open} onClose={onClose}>
-      {/* Modal content */}
       &lt;Box
         sx={{
           width: 400,
@@ -206,7 +164,6 @@ const AddKanbanTaskModal = ({ open, onClose, onTaskAdded, listId, projectId }) =
           position: "relative",
         }}
       >
-        {/* Close button */}
         &lt;IconButton
           aria-label="close"
           onClick={onClose}
@@ -223,14 +180,7 @@ const AddKanbanTaskModal = ({ open, onClose, onTaskAdded, listId, projectId }) =
         &lt;Typography variant="h6" gutterBottom>
           ➕ Add Kanban Task
         &lt;/Typography>
-        {error &amp;&amp; (
-          &lt;Typography color="error" sx={{ mb: 2 }}>
-            {error}
-          &lt;/Typography>
-        )}
 
-        {/* Form fields */}
-        {/* Title */}
         &lt;TextField
           label="📝 Title"
           fullWidth
@@ -239,7 +189,6 @@ const AddKanbanTaskModal = ({ open, onClose, onTaskAdded, listId, projectId }) =
           onChange={(e) => handleChange("title", e.target.value)}
           sx={{ mb: 2 }}
         />
-        {/* Description */}
         &lt;TextField
           label="📄 Description"
           fullWidth
@@ -251,12 +200,10 @@ const AddKanbanTaskModal = ({ open, onClose, onTaskAdded, listId, projectId }) =
           sx={{ mb: 2 }}
         />
 
-        {/* Status */}
         &lt;FormControl fullWidth sx={{ mb: 2 }}>
           &lt;InputLabel>Status&lt;/InputLabel>
           &lt;Select
             value={form.status}
-            label="Status"
             onChange={(e) => handleChange("status", e.target.value)}
           >
             &lt;MenuItem value="todo">📝 To Do&lt;/MenuItem>
@@ -266,12 +213,20 @@ const AddKanbanTaskModal = ({ open, onClose, onTaskAdded, listId, projectId }) =
           &lt;/Select>
         &lt;/FormControl>
 
-        {/* Assigned To */}
         &lt;FormControl fullWidth sx={{ mb: 2 }}>
-          &lt;InputLabel>Assigned To&lt;/InputLabel>
+          &lt;InputLabel>Assignees&lt;/InputLabel>
           &lt;Select
-            value={form.assignedTo}
-            onChange={(e) => handleChange("assignedTo", e.target.value)}
+            multiple
+            value={form.assignees}
+            onChange={(e) => handleChange("assignees", e.target.value)}
+            renderValue={(selected) =>
+              selected
+                .map((id) => {
+                  const user = users.find((u) => u._id === id);
+                  return user ? `👤 ${user.username}` : id;
+                })
+                .join(", ")
+            }
           >
             {users.length === 0 ? (
               &lt;MenuItem disabled>🚫 No users available&lt;/MenuItem>
@@ -290,31 +245,28 @@ const AddKanbanTaskModal = ({ open, onClose, onTaskAdded, listId, projectId }) =
           &lt;/Select>
         &lt;/FormControl>
 
-        {/* Priority */}
         &lt;FormControl fullWidth sx={{ mb: 2 }}>
           &lt;InputLabel>Priority&lt;/InputLabel>
           &lt;Select
-            value={form.priority || "medium"}
+            value={form.priority}
             onChange={(e) => handleChange("priority", e.target.value)}
           >
-                       &lt;MenuItem value="high">⚡ High&lt;/MenuItem>
+            &lt;MenuItem value="high">⚡ High&lt;/MenuItem>
             &lt;MenuItem value="medium">📊 Medium&lt;/MenuItem>
             &lt;MenuItem value="low">🐢 Low&lt;/MenuItem>
           &lt;/Select>
         &lt;/FormControl>
 
-        {/* Deadline */}
         &lt;TextField
           label="📅 Deadline"
           type="date"
           fullWidth
           InputLabelProps={{ shrink: true }}
-          value={form.deadline || ""}
+          value={form.deadline}
           onChange={(e) => handleChange("deadline", e.target.value)}
           sx={{ mb: 2 }}
         />
 
-        {/* Action buttons */}
         &lt;Box sx={{ display: "flex", justifyContent: "flex-end", gap: 1 }}>
           &lt;Button variant="outlined" onClick={onClose}>
             ❌ Cancel
@@ -345,7 +297,7 @@ export default AddKanbanTaskModal;
 <br class="clear">
 
 <footer>
-    Documentation generated by <a href="https://github.com/jsdoc/jsdoc">JSDoc 4.0.5</a> on Thu Mar 05 2026 23:02:43 GMT+0000 (Coordinated Universal Time)
+    Documentation generated by <a href="https://github.com/jsdoc/jsdoc">JSDoc 4.0.5</a> on Thu Apr 09 2026 19:32:50 GMT-0300 (Argentina Standard Time)
 </footer>
 
 <script> prettyPrint(); </script>

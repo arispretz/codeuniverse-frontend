@@ -1,7 +1,6 @@
 /**
  * @fileoverview DeleteTaskModal component.
- * Provides a modal dialog to confirm deletion of a Kanban task.
- * Calls the backend service to delete the task and triggers a callback on success.
+ * Provides a modal dialog to confirm deletion of a task (kanban, local o personal).
  *
  * @module components/modals/DeleteTaskModal
  */
@@ -16,31 +15,21 @@ import {
 } from "@mui/material";
 import CloseIcon from "@mui/icons-material/Close";
 import { deleteKanbanTask } from "../../services/kanbanService.js";
+import { deleteLocalTask, deletePersonalTask } from "../../services/taskService.js";
 
-/**
- * DeleteTaskModal Component
- *
- * @function DeleteTaskModal
- * @param {Object} props - Component props.
- * @param {boolean} props.open - Controls whether the modal is open.
- * @param {Function} props.onClose - Callback to close the modal.
- * @param {Object} props.task - Task object to be deleted. Must include `_id` and `title`.
- * @param {Function} props.onTaskDeleted - Callback triggered when a task is successfully deleted.
- * @returns {JSX.Element|null} Modal dialog for task deletion, or `null` if no task is provided.
- */
 const DeleteTaskModal = ({ open, onClose, task, onTaskDeleted }) => {
   if (!task) return null;
 
-  /**
-   * Handles task deletion by calling the backend service.
-   *
-   * @async
-   * @function handleDelete
-   * @returns {Promise<void>} Resolves when the task is deleted successfully.
-   */
   const handleDelete = async () => {
     try {
-      await deleteKanbanTask(task._id);
+      if (task.source === "kanban") {
+        await deleteKanbanTask(task._id);
+      } else if (task.source === "local") {
+        await deleteLocalTask(task.listId, task._id);
+      } else if (task.source === "personal") {
+        await deletePersonalTask(task._id);
+      }
+
       onTaskDeleted(task);
       onClose();
     } catch (err) {

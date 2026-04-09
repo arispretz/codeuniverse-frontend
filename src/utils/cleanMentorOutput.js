@@ -22,22 +22,19 @@
  */
 export function cleanMentorOutput(text) {
   if (!text) return "";
-  let result = String(text).trim();
+    let result = String(text).trim();
 
-  // 🔹 Remove common prefixes
   ["Answer:", "Explanation:", "Response:"].forEach((prefix) => {
     if (result.toLowerCase().startsWith(prefix.toLowerCase())) {
       result = result.slice(prefix.length).trim();
     }
   });
 
-  // 🔹 Remove code blocks
-  result = result.replace(/\\begin\{code\}[\s\S]*?\\end\{code\}/gi, "");
-  result = result.replace(/```[\s\S]*?```/g, "");
-
   // 🔹 Remove Edge metadata
-  result = result.replace(/edge_all_open_tabs\s*=\s*\[[\s\S]*?\]/gi, "");
-  result = result.replace(/#\s*User.*browser.*tabs.*metadata.*/gi, "");
+  result = result.replace(/edge_all_open_tabs[\s\S]*/gi, "");
+  result = result.replace(/#\s*User.*Edge.*browser.*tabs.*metadata.*/gi, "");
+  result = result.replace(/User.*Edge.*browser.*tabs.*metadata.*/gi, "");
+  result = result.replace(/# User's Edge browser tabs metadata[\s\S]*/gi, "");
 
   // 🔹 Remove unwanted technical references
   result = result
@@ -46,16 +43,15 @@ export function cleanMentorOutput(text) {
     .replace(/\bimport\s+os\b/gi, "")
     .replace(/\btraceback\b/gi, "");
 
-  // 🔹 Keep only from "Step 1" onwards if found
   const stepMatch = result.match(/(Step\s*1|^\s*1\.)/im);
   if (stepMatch && stepMatch.index > 0) {
     result = result.slice(stepMatch.index).trim();
   }
 
-  // 🔹 Normalize spacing and formatting
   result = result.replace(/\n{3,}/g, "\n\n").trim();
   result = result.replace(/[ \t]{2,}/g, " ");
   result = result.replace(/^limitation\s*:/im, "Limitation:");
 
   return result;
 }
+

@@ -23,31 +23,20 @@ import CloseIcon from "@mui/icons-material/Close";
 import { getPublicUsers } from "../../services/userService.js";
 import { createLocalTask } from "../../services/taskService.js";
 import { denormalizeStatus } from "../KanbanUtils.jsx";
+import { useSnackbar } from "notistack";
 
-/**
- * AddTaskModal Component
- *
- * @function AddTaskModal
- * @param {Object} props - Component props.
- * @param {boolean} props.open - Controls whether the modal is open.
- * @param {Function} props.onClose - Callback to close the modal.
- * @param {Function} props.onTaskAdded - Callback triggered when a task is successfully added.
- * @param {string} props.listId - ID of the list where the task will be created.
- * @param {string} props.projectId - ID of the project associated with the task.
- * @returns {JSX.Element} Modal form for creating a local task.
- */
 const AddTaskModal = ({ open, onClose, onTaskAdded, listId, projectId }) => {
+  const { enqueueSnackbar } = useSnackbar();
   const [form, setForm] = useState({
     title: "",
     description: "",
     status: "todo",
     assignees: [],
-    priority: "medium", // normalized values: "high", "medium", "low"
+    priority: "Medium",
     deadline: "",
     tags: [],
   });
 
-  const [error, setError] = useState("");
   const [users, setUsers] = useState([]);
 
   useEffect(() => {
@@ -56,35 +45,16 @@ const AddTaskModal = ({ open, onClose, onTaskAdded, listId, projectId }) => {
         .then((data) => setUsers(data))
         .catch((err) => {
           console.error("❌ Error loading users:", err);
+          enqueueSnackbar("Error loading users ❌", { variant: "error" });
           setUsers([]);
         });
     }
-  }, [open]);
+  }, [open, enqueueSnackbar]);
 
-  /**
-   * Handles form field changes.
-   *
-   * @param {string} field - Field name to update.
-   * @param {string|Array<string>} value - New value for the field.
-   */
   const handleChange = (field, value) => {
     setForm((prev) => ({ ...prev, [field]: value }));
   };
 
-  /**
-   * Creates a new local task by sending payload to backend.
-   *
-   * @async
-   * @param {Object} formData - Form data containing task details.
-   * @param {string} formData.title - Task title.
-   * @param {string} formData.description - Task description.
-   * @param {string} formData.status - Task status ("todo", "inprogress", "review", "done").
-   * @param {Array<string>} formData.assignees - Array of user IDs assigned to the task.
-   * @param {string} formData.priority - Task priority ("high", "medium", "low").
-   * @param {string} [formData.deadline] - Optional deadline date string.
-   * @param {Array<string>} [formData.tags] - Optional tags for the task.
-   * @returns {Promise<void>} Resolves when the task is successfully created.
-   */
   const createTask = async (formData) => {
     try {
       const payload = {
@@ -93,7 +63,7 @@ const AddTaskModal = ({ open, onClose, onTaskAdded, listId, projectId }) => {
         status: denormalizeStatus(formData.status),
         projectId,
         deadline: formData.deadline ? new Date(formData.deadline).toISOString() : null,
-        assignees: formData.assignees.map((id) => ({ _id: id })),
+        assignees: formData.assignees,
         priority: formData.priority,
         tags: formData.tags,
         source: "local",
@@ -101,30 +71,41 @@ const AddTaskModal = ({ open, onClose, onTaskAdded, listId, projectId }) => {
 
       const data = await createLocalTask(listId, payload);
       onTaskAdded(data);
+      enqueueSnackbar(`Task "${data.title}" created ✅`, { variant: "success" });
       onClose();
     } catch (err) {
       console.error("❌ Error creating local task:", err.message);
-      setError("⚠️ There was a problem creating the task.");
+      enqueueSnackbar("Error creating local task ❌", { variant: "error" });
     }
   };
 
-  /**
-   * Validates form fields and triggers task creation.
-   *
-   * @async
-   * @returns {Promise<void>} Resolves when validation passes and task is created.
-   */
   const handleSubmit = async () => {
     const { title, description, assignees, deadline } = form;
 
-    if (!title?.trim() || !description?.trim() || assignees.length === 0 || !deadline || !listId || !projectId) {
-      setError("⚠️ All required fields must be completed.");
+    if (!title?.trim()) {
+      enqueueSnackbar("⚠️ Title is required.", { variant: "warning" });
+      return;
+    }
+    if (!description?.trim()) {
+      enqueueSnackbar("⚠️ Description is required.", { variant: "warning" });
+      return;
+    }
+    if (assignees.length === 0) {
+      enqueueSnackbar("⚠️ You must assign the task to at least one user.", { variant: "warning" });
+      return;
+    }
+    if (!deadline) {
+      enqueueSnackbar("⚠️ Deadline is required.", { variant: "warning" });
+      return;
+    }
+    if (!listId || !projectId) {
+      enqueueSnackbar("⚠️ Missing project or list information.", { variant: "warning" });
       return;
     }
 
     const deadlineTimestamp = new Date(deadline).getTime();
     if (isNaN(deadlineTimestamp)) {
-      setError("⚠️ Invalid deadline date.");
+      enqueueSnackbar("⚠️ Invalid deadline date.", { variant: "warning" });
       return;
     }
 
@@ -133,7 +114,6 @@ const AddTaskModal = ({ open, onClose, onTaskAdded, listId, projectId }) => {
 
   return (
     <Modal open={open} onClose={onClose}>
-      {/* Modal content */}
       <Box
         sx={{
           width: 400,
@@ -147,7 +127,6 @@ const AddTaskModal = ({ open, onClose, onTaskAdded, listId, projectId }) => {
           position: "relative",
         }}
       >
-        {/* Close button */}
         <IconButton
           aria-label="close"
           onClick={onClose}
@@ -164,14 +143,7 @@ const AddTaskModal = ({ open, onClose, onTaskAdded, listId, projectId }) => {
         <Typography variant="h6" gutterBottom>
           ➕ Add Local Task
         </Typography>
-        {error && (
-          <Typography color="error" sx={{ mb: 2 }}>
-            {error}
-          </Typography>
-        )}
 
-        {/* Form fields */}
-        {/* Title */}
         <TextField
           label="📝 Title"
           fullWidth
@@ -180,7 +152,6 @@ const AddTaskModal = ({ open, onClose, onTaskAdded, listId, projectId }) => {
           onChange={(e) => handleChange("title", e.target.value)}
           sx={{ mb: 2 }}
         />
-        {/* Description */}
         <TextField
           label="📄 Description"
           fullWidth
@@ -192,7 +163,6 @@ const AddTaskModal = ({ open, onClose, onTaskAdded, listId, projectId }) => {
           sx={{ mb: 2 }}
         />
 
-        {/* Status */}
         <FormControl fullWidth sx={{ mb: 2 }}>
           <InputLabel>Status</InputLabel>
           <Select
@@ -207,7 +177,6 @@ const AddTaskModal = ({ open, onClose, onTaskAdded, listId, projectId }) => {
           </Select>
         </FormControl>
 
-        {/* Priority */}
         <FormControl fullWidth sx={{ mb: 2 }}>
           <InputLabel>Priority</InputLabel>
           <Select
@@ -215,13 +184,12 @@ const AddTaskModal = ({ open, onClose, onTaskAdded, listId, projectId }) => {
             label="Priority"
             onChange={(e) => handleChange("priority", e.target.value)}
           >
-            <MenuItem value="high">⚡ High</MenuItem>
-            <MenuItem value="medium">📊 Medium</MenuItem>
-            <MenuItem value="low">🐢 Low</MenuItem>
+            <MenuItem value="High">⚡ High</MenuItem>
+            <MenuItem value="Medium">📊 Medium</MenuItem>
+            <MenuItem value="Low">🐢 Low</MenuItem>
           </Select>
         </FormControl>
 
-        {/* Deadline */}
         <TextField
           label="📅 Deadline"
           type="date"
@@ -232,7 +200,6 @@ const AddTaskModal = ({ open, onClose, onTaskAdded, listId, projectId }) => {
           InputLabelProps={{ shrink: true }}
         />
 
-        {/* Assignees */}
         <FormControl fullWidth sx={{ mb: 2 }}>
           <InputLabel>Assignees</InputLabel>
           <Select
@@ -265,7 +232,6 @@ const AddTaskModal = ({ open, onClose, onTaskAdded, listId, projectId }) => {
           </Select>
         </FormControl>
 
-                {/* Tags */}
         <TextField
           label="🏷️ Tags (comma separated)"
           fullWidth
@@ -279,7 +245,6 @@ const AddTaskModal = ({ open, onClose, onTaskAdded, listId, projectId }) => {
           sx={{ mb: 2 }}
         />
 
-        {/* Action buttons */}
         <Box sx={{ display: "flex", justifyContent: "flex-end", gap: 1 }}>
           <Button variant="outlined" onClick={onClose}>
             ❌ Cancel

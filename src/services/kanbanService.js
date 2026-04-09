@@ -90,10 +90,10 @@ export async function createKanbanTask(listId, payload) {
   if (!token) throw new Error("User not authenticated");
 
   const backendPayload = {
-    ...payload,
-    status: denormalizeStatus(payload.status || "to do"),
-    assignees: payload.assignees || (payload.assignedTo ? [payload.assignedTo] : []),
-  };
+  ...payload,
+  status: payload?.status ? denormalizeStatus(payload.status) : "to do",
+  assignees: payload.assignees || [],
+};
 
   const { data } = await axios.post(
     `${BASE_URL}/api/tasks/kanban/${listId}`,
