@@ -24,7 +24,7 @@ export async function initSocket() {
   });
 
   socket.on("connect", () => {
-    console.log("✅ Connected:", socket.id);
+    console.log("✅ Connected:");
   });
 
   socket.on("disconnect", (reason) => {
@@ -43,10 +43,6 @@ export async function initSocket() {
         console.error("❌ Failed to refresh token:", refreshErr.message);
       }
     }
-  });
-
-  socket.on("connected", (payload) => {
-    console.log("📡 Server says:", payload.message);
   });
 
   socket.on("heartbeat_ack", (payload) => {
