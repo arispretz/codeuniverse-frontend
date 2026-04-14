@@ -85,13 +85,13 @@ export const darkTheme = createTheme({
     MuiIconButton: {
       styleOverrides: {
         root: {
-          color: "#FFD700",
+          color: "#FFC107",
           "&:hover": {
-            color: "#FFF275",
+            color: "#FFD54F",
           },
         },
       },
-    },
+    }, 
     MuiMenuItem: {
       styleOverrides: {
         root: {
@@ -145,10 +145,10 @@ export const lightTheme = createTheme({
     },
     background: {
       default: "#fafafa",       
-      paper: "#f5f5f5",         
+      paper: "#f0f4f8",         
     },
     text: {
-      primary: "#212121",       
+      primary: "#616161",       
       secondary: "#424242",     
       disabled: "#9e9e9e",      
     },

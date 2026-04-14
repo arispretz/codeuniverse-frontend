@@ -370,6 +370,15 @@ const LocalTaskBoard = () => {
                 <ListItemText
                   primary={task.title}
                   secondary={task.description}
+                  sx={{
+                    pr: 8, 
+                    display: "-webkit-box",
+                    overflow: "hidden",
+                    textOverflow: "ellipsis",
+                    WebkitBoxOrient: "vertical",
+                    WebkitLineClamp: 2, 
+                    maxWidth: "calc(100% - 120px)",
+                  }}
                 />
               </ListItem>
             );
