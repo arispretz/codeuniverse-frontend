@@ -20,6 +20,7 @@ import {
 import CloseIcon from "@mui/icons-material/Close";
 import { createProject } from "../../services/projectService.js";
 import { useSnackbar } from "notistack"; 
+import { DatePicker } from "@mui/x-date-pickers";
 
 /**
  * NewProjectModal Component
@@ -149,63 +150,61 @@ const NewProjectModal = ({ open, onClose, onSubmit, source = "local" }) => {
               </IconButton>
 
               {/* Modal title */}
-              <Typography variant="h6" gutterBottom id="new-project-title">
-                ➕ New Project
-              </Typography>
+                <Typography variant="h6" gutterBottom id="new-project-title">
+                  ➕ New Project
+                </Typography>
 
-              {/* Form fields */}
-              <form onSubmit={handleSubmit}>
-                <TextField
-                  type="text"
-                  name="projectName"
-                  value={formData.projectName}
-                  onChange={handleChange}
-                  label="📝 Project Name"
-                  fullWidth
-                  required
-                  sx={{ mb: 2 }}
-                />
-                <TextField
-                  multiline
-                  rows={3}
-                  name="description"
-                  value={formData.description}
-                  onChange={handleChange}
-                  label="📄 Description"
-                  fullWidth
-                  required
-                  sx={{ mb: 2 }}
-                />
-                <TextField
-                  type="text"
-                  name="sprintName"
-                  value={formData.sprintName}
-                  onChange={handleChange}
-                  label="🏃 Sprint Name"
-                  fullWidth
-                  sx={{ mb: 2 }}
-                />
-                <TextField
-                  type="date"
-                  name="sprintDueDate"
-                  value={formData.sprintDueDate}
-                  onChange={handleChange}
-                  label="📅 Sprint Due Date"
-                  fullWidth
-                  InputLabelProps={{ shrink: true }}
-                  sx={{ mb: 2 }}
-                />
+                {/* Form fields */}
+                <form onSubmit={handleSubmit}>
+                  <TextField
+                    type="text"
+                    name="projectName"
+                    value={formData.projectName}
+                    onChange={handleChange}
+                    label="📝 Project Name"
+                    fullWidth
+                    required
+                    sx={{ mb: 2 }}
+                  />
+                  <TextField
+                    multiline
+                    rows={3}
+                    name="description"
+                    value={formData.description}
+                    onChange={handleChange}
+                    label="📄 Description"
+                    fullWidth
+                    required
+                    sx={{ mb: 2 }}
+                  />
+                  <TextField
+                    type="text"
+                    name="sprintName"
+                    value={formData.sprintName}
+                    onChange={handleChange}
+                    label="🏃 Sprint Name"
+                    fullWidth
+                    sx={{ mb: 2 }}
+                  />
+                  <DatePicker
+                    label="📅 Sprint Due Date"
+                    value={formData.sprintDueDate}
+                    onChange={(newDate) =>
+                      setFormData((prev) => ({ ...prev, sprintDueDate: newDate }))
+                    }
+                    slotProps={{ textField: { fullWidth: true, sx: { mb: 2 } } }}
+                  />
 
-                {/* Action buttons */}
-                <Box sx={{ display: "flex", justifyContent: "flex-end", gap: 2, mt: 3 }}>
-                  <Button type="button" variant="outlined" onClick={onClose}>
-                    ❌ Cancel
-                  </Button>
-                  <Button type="submit" variant="contained">
-                    ✅ Create Project
-                  </Button>
-                </Box>
-              </form>
+                  {/* Action buttons */}
+                  <Box sx={{ display: "flex", justifyContent: "flex-end", gap: 2, mt: 3 }}>
+                    <Button type="button" variant="outlined" onClick={onClose}>
+                      ❌ Cancel
+                    </Button>
+                    <Button type="submit" variant="contained">
+                      ✅ Create Project
+                    </Button>
+                  </Box>
+                </form>
             </Box>
           </motion.div>
         </Modal>
