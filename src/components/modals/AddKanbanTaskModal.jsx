@@ -23,6 +23,7 @@ import CloseIcon from "@mui/icons-material/Close";
 import { getPublicUsers } from "../../services/userService.js";
 import { createKanbanTask } from "../../services/kanbanService.js";
 import { useSnackbar } from "notistack";
+import { DatePicker } from "@mui/x-date-pickers"; 
 
 const AddKanbanTaskModal = ({ open, onClose, onTaskAdded, listId, projectId }) => {
   const { enqueueSnackbar } = useSnackbar();
@@ -32,7 +33,7 @@ const AddKanbanTaskModal = ({ open, onClose, onTaskAdded, listId, projectId }) =
     status: "todo",
     assignees: [],
     priority: "medium",
-    deadline: "",
+    deadline: null, 
     tags: [],
   });
 
@@ -61,7 +62,7 @@ const AddKanbanTaskModal = ({ open, onClose, onTaskAdded, listId, projectId }) =
         description: formData.description.trim(),
         status: formData.status || "todo",
         projectId,
-        deadline: formData.deadline ? new Date(formData.deadline).toISOString() : null,
+        deadline: formData.deadline ? formData.deadline.toISOString() : null, 
         assignees: formData.assignees,
         priority: formData.priority,
         tags: formData.tags,
@@ -113,7 +114,7 @@ const AddKanbanTaskModal = ({ open, onClose, onTaskAdded, listId, projectId }) =
       return;
     }
 
-    if (deadline && isNaN(new Date(deadline).getTime())) {
+    if (deadline && isNaN(deadline.getTime())) {
       enqueueSnackbar("⚠️ Invalid deadline date.", { variant: "warning" });
       return;
     }
@@ -229,14 +230,11 @@ const AddKanbanTaskModal = ({ open, onClose, onTaskAdded, listId, projectId }) =
           </Select>
         </FormControl>
 
-        <TextField
+        <DatePicker
           label="📅 Deadline"
-          type="date"
-          fullWidth
-          InputLabelProps={{ shrink: true }}
           value={form.deadline}
-          onChange={(e) => handleChange("deadline", e.target.value)}
-          sx={{ mb: 2 }}
+          onChange={(newDate) => handleChange("deadline", newDate)}
+          slotProps={{ textField: { fullWidth: true, sx: { mb: 2 } } }}
         />
 
         <Box sx={{ display: "flex", justifyContent: "flex-end", gap: 1 }}>

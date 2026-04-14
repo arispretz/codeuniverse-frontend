@@ -24,6 +24,7 @@ import { getPublicUsers } from "../../services/userService.js";
 import { createLocalTask } from "../../services/taskService.js";
 import { denormalizeStatus } from "../KanbanUtils.jsx";
 import { useSnackbar } from "notistack";
+import { DatePicker } from "@mui/x-date-pickers"; 
 
 const AddTaskModal = ({ open, onClose, onTaskAdded, listId, projectId }) => {
   const { enqueueSnackbar } = useSnackbar();
@@ -33,7 +34,7 @@ const AddTaskModal = ({ open, onClose, onTaskAdded, listId, projectId }) => {
     status: "todo",
     assignees: [],
     priority: "Medium",
-    deadline: "",
+    deadline: null, 
     tags: [],
   });
 
@@ -62,7 +63,7 @@ const AddTaskModal = ({ open, onClose, onTaskAdded, listId, projectId }) => {
         description: formData.description,
         status: denormalizeStatus(formData.status),
         projectId,
-        deadline: formData.deadline ? new Date(formData.deadline).toISOString() : null,
+        deadline: formData.deadline ? formData.deadline.toISOString() : null, 
         assignees: formData.assignees,
         priority: formData.priority,
         tags: formData.tags,
@@ -102,8 +103,7 @@ const AddTaskModal = ({ open, onClose, onTaskAdded, listId, projectId }) => {
       return;
     }
 
-    const deadlineTimestamp = new Date(deadline).getTime();
-    if (isNaN(deadlineTimestamp)) {
+    if (isNaN(deadline.getTime())) {
       enqueueSnackbar("⚠️ Invalid deadline date.", { variant: "warning" });
       return;
     }
@@ -189,14 +189,11 @@ const AddTaskModal = ({ open, onClose, onTaskAdded, listId, projectId }) => {
           </Select>
         </FormControl>
 
-        <TextField
+        <DatePicker
           label="📅 Deadline"
-          type="date"
-          fullWidth
           value={form.deadline}
-          onChange={(e) => handleChange("deadline", e.target.value)}
-          sx={{ mb: 2 }}
-          InputLabelProps={{ shrink: true }}
+          onChange={(newDate) => handleChange("deadline", newDate)}
+          slotProps={{ textField: { fullWidth: true, sx: { mb: 2 } } }}
         />
 
         <FormControl fullWidth sx={{ mb: 2 }}>
