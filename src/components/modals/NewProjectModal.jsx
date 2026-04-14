@@ -19,6 +19,7 @@ import {
 } from "@mui/material";
 import CloseIcon from "@mui/icons-material/Close";
 import { createProject } from "../../services/projectService.js";
+import { useSnackbar } from "notistack"; 
 
 /**
  * NewProjectModal Component
@@ -47,6 +48,8 @@ const NewProjectModal = ({ open, onClose, onSubmit, source = "local" }) => {
     sprintDueDate: "",
     tasks: [],
   });
+
+  const { enqueueSnackbar } = useSnackbar(); 
 
   /**
    * Handles form field changes.
@@ -91,9 +94,18 @@ const NewProjectModal = ({ open, onClose, onSubmit, source = "local" }) => {
       const response = await createProject(payload);
 
       if (onSubmit) onSubmit(response.project || response);
+
+      enqueueSnackbar(`Project "${formData.projectName}" created ✅`, {
+        variant: "success",
+      });
+
       onClose();
     } catch (error) {
       console.error("❌ Error creating project:", error);
+
+      enqueueSnackbar("Error creating project ❌", {
+        variant: "error",
+      });
     }
   };
 

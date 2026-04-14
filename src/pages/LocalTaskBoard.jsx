@@ -283,7 +283,10 @@ const LocalTaskBoard = () => {
       <AddTaskModal
         open={openAdd}
         onClose={() => setOpenAdd(false)}
-        onTaskAdded={(newTask) => setAllTasks((prev) => [...prev, newTask])}
+        onTaskAdded={(newTask) => {
+        setAllTasks((prev) => [...prev, newTask]);
+        enqueueSnackbar(`Task "${newTask.title}" created ✅`, { variant: "success" });
+        }}
         listId={selectedListId || "default-list"}
         projectId={projectId}
       />

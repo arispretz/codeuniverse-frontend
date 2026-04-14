@@ -137,27 +137,27 @@ export const lightTheme = createTheme({
     mode: "light",
     primary: {
       main: "#1976d2",
-      contrastText: "#ebeeddff",
+      contrastText: "#ffffff",
     },
     secondary: {
-      main: "#c4a51d7c",
-      contrastText: "#d8dfceff",
+      main: "#9c27b0",          
+      contrastText: "#ffffff",
     },
     background: {
-      default: "#FEFDEA",
-      paper: "#e0e0e0",
+      default: "#fafafa",       
+      paper: "#f5f5f5",         
     },
     text: {
-      primary: "#260c51ff",
-      secondary: "#8e5ea0ff",
-      disabled: "#8424c9ff",
+      primary: "#212121",       
+      secondary: "#424242",     
+      disabled: "#9e9e9e",      
     },
     action: {
-      hover: "#d2d2c0ff",
-      selected: "#cbc586ff",
-      disabled: "#cccccc",
+      hover: "#f5f5f5",
+      selected: "#e0e0e0",
+      disabled: "#bdbdbd",
     },
-    divider: "#bdbdbd",
+    divider: "#9e9e9e",
     navbar: {
       background: "#142f4f",
       text: "#e0e0e0",
@@ -177,9 +177,9 @@ export const lightTheme = createTheme({
     MuiLink: {
       styleOverrides: {
         root: {
-          color: "#1206f8ff",
+          color: "#1976d2",
           "&:hover": {
-            color: "#0d17a1a8",
+            color: "#0d47a1",
           },
         },
       },
@@ -187,10 +187,17 @@ export const lightTheme = createTheme({
     MuiIconButton: {
       styleOverrides: {
         root: {
-          color: "#F5F5F5",
+          color: "#424242",    
           "&:hover": {
-            color: "#939197ff",
+            color: "#1976d2",   
           },
+        },
+      },
+    },
+    MuiChip: {
+      styleOverrides: {
+        root: {
+          fontWeight: 600,
         },
       },
     },

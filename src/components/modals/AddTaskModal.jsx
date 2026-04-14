@@ -71,7 +71,6 @@ const AddTaskModal = ({ open, onClose, onTaskAdded, listId, projectId }) => {
 
       const data = await createLocalTask(listId, payload);
       onTaskAdded(data);
-      enqueueSnackbar(`Task "${data.title}" created ✅`, { variant: "success" });
       onClose();
     } catch (err) {
       console.error("❌ Error creating local task:", err.message);
