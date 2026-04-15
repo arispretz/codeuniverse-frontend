@@ -165,6 +165,37 @@ export async function createFullProject(payload) {
 }
 
 /**
+ * Add a member to a project.
+ *
+ * @async
+ * @function addMemberToProject
+ * @param {string} projectId - Project ID.
+ * @param {string} memberId - User ID of the member to add.
+ * @returns {Promise<Object>} Updated project data with members.
+ *
+ * @example
+ * const updated = await addMemberToProject("proj123", "user456");
+ * console.log(updated.members);
+ */
+export async function addMemberToProject(projectId, memberId) {
+  const token = await getUserToken(true);
+  if (!token) throw new Error("User not authenticated");
+
+  const { data } = await axios.post(
+    `${BASE_URL}/api/projects/${projectId}/members`,
+    { memberId },
+    {
+      headers: {
+        "Content-Type": "application/json",
+        Authorization: `Bearer ${token}`,
+      },
+    }
+  );
+
+  return data;
+}
+
+/**
  * 📋 LOCAL LISTS
  */
 

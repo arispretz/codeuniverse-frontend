@@ -40,6 +40,7 @@ import { useAuthState } from "react-firebase-hooks/auth";
 import { auth } from "../firebase/auth.js";
 
 import NewProjectModal from "../components/modals/NewProjectModal";
+import AddMemberModal from "../components/modals/AddMemberModal";
 import NewKanbanListModal from "../components/modals/NewKanbanListModal";
 import NewListModal from "../components/modals/NewListModal";
 import AddKanbanTaskModal from "../components/modals/AddKanbanTaskModal";
@@ -60,6 +61,7 @@ const ProjectManagementDashboard = () => {
   const [filters, setFilters] = useState({ owner: "", status: "", tag: "", search: "" });
   const [isModalOpen, setModalOpen] = useState(false);
   const [projects, setProjects] = useState([]);
+  const [addMemberModalOpen, setAddMemberModalOpen] = useState(false);
   const [listModalOpen, setListModalOpen] = useState(false);
   const [kanbanListModalOpen, setKanbanListModalOpen] = useState(false);
   const [addKanbanTaskModalOpen, setAddKanbanTaskModalOpen] = useState(false);
@@ -349,6 +351,17 @@ const ProjectManagementDashboard = () => {
                     size="small"
                     onClick={() => {
                       setSelectedProject(project._id);
+                      setAddMemberModalOpen(true);
+                    }}
+                  >
+                    ➕ Add Member
+                  </Button>
+
+                  <Button
+                    variant="outlined"
+                    size="small"
+                    onClick={() => {
+                      setSelectedProject(project._id);
                       setListModalOpen(true);
                     }}
                   >
@@ -534,6 +547,15 @@ const ProjectManagementDashboard = () => {
         onClose={() => setModalOpen(false)}
         onSubmit={handleProjectSubmit}
         source="backend"
+      />
+      <AddMemberModal
+        open={addMemberModalOpen}
+        onClose={() => setAddMemberModalOpen(false)}
+        projectId={selectedProject}
+        onMemberAdded={(updatedProject) => {
+          enqueueSnackbar("Member added ✅", { variant: "success" });
+          fetchProjects();
+        }}
       />
 
       <NewListModal

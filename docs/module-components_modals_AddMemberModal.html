@@ -2,7 +2,7 @@
 <html lang="en">
 <head>
     <meta charset="utf-8">
-    <title>JSDoc: Source: src/services/taskService.js</title>
+    <title>JSDoc: Module: components/modals/AddMemberModal</title>
 
     <script src="scripts/prettify/prettify.js"> </script>
     <script src="scripts/prettify/lang-css.js"> </script>
@@ -17,302 +17,415 @@
 
 <div id="main">
 
-    <h1 class="page-title">Source: src/services/taskService.js</h1>
+    <h1 class="page-title">Module: components/modals/AddMemberModal</h1>
 
     
 
 
 
+
+<section>
+
+<header>
     
-    <section>
-        <article>
-            <pre class="prettyprint source linenums"><code>import axios from "axios";
-import { getUserToken } from "../utils/userToken.js";
-import { normalizeStatus, denormalizeStatus } from "../components/KanbanUtils.jsx";
+        
+            
+        
+    
+</header>
 
-const BASE_URL = import.meta.env.VITE_EXPRESS_URL;
-if (!BASE_URL) {
-  throw new Error("Missing environment variable: VITE_EXPRESS_URL");
-}
+<article>
+    <div class="container-overview">
+    
+        
+            <div class="description">Modal component for adding a new member to a project.
+Provides a dialog with a text field to enter a user ID or email,
+and calls the backend service to add the member to the selected project.</div>
+        
 
-/**
- * @fileoverview Task API client.
- * Provides functions to interact with the Express backend for:
- * - Local tasks (linked to projects/lists)
- * - Personal tasks (user-specific)
- * - Tasks by list ID
- *
- * All requests require a valid Firebase ID token for authentication.
- *
- * @module services/taskService
- */
+        
+            
 
-/**
- * 📌 LOCAL TASKS
- */
 
-/**
- * Fetch local tasks.
- *
- * @async
- * @function getLocalTasks
- * @param {string} projectId - Project ID.
- * @param {string|null} [assignedUserId=null] - User ID assigned to the task.
- * @returns {Promise&lt;Array&lt;Object>>} List of normalized local tasks.
- * @throws {Error} If user is not authenticated.
- *
- * @example
- * const tasks = await getLocalTasks("proj123", "user456");
- * console.log(tasks[0].status); // normalized status
- */
-export async function getLocalTasks(projectId, assignedUserId = null) {
-  const token = await getUserToken(true);
-  if (!token) throw new Error("User not authenticated");
 
-  const params = {};
-  if (projectId) params.projectId = projectId;
-  if (assignedUserId) params.assignedTo = assignedUserId;
 
-  const { data } = await axios.get(`${BASE_URL}/api/tasks/local`, {
-    params,
-    headers: { Authorization: `Bearer ${token}` },
-  });
 
-  const tasks = Array.isArray(data)
-    ? data
-    : Array.isArray(data.items)
-    ? data.items
-    : Array.isArray(data.tasks)
-    ? data.tasks
-    : [];
 
-  return tasks.map((t) => ({ ...t, status: normalizeStatus(t.status) }));
-}
 
-/**
- * Create a local task.
- *
- * @async
- * @function createLocalTask
- * @param {string} listId - List ID.
- * @param {Object} payload - Task data (e.g., { title, description, status, assignedTo }).
- * @returns {Promise&lt;Object>} Created task with normalized status.
- */
-export async function createLocalTask(listId, payload) {
-  const token = await getUserToken(true);
-  if (!token) throw new Error("User not authenticated");
 
-  const backendPayload = {
-    ...payload,
-    listId,
-    status: denormalizeStatus(payload.status || "to do"),
-    assignedTo: payload.assignedTo || null,
-  };
 
-  const { data } = await axios.post(`${BASE_URL}/api/lists/${listId}/tasks`, backendPayload, {
-    headers: { Authorization: `Bearer ${token}` },
-  });
 
-  return { ...data, status: normalizeStatus(data.status) };
-}
 
-/**
- * Update a local task.
- *
- * @async
- * @function updateLocalTask
- * @param {string} listId - List ID.
- * @param {string} taskId - Task ID.
- * @param {Object} updates - Task updates.
- * @returns {Promise&lt;Object>} Updated task with normalized status.
- */
-export async function updateLocalTask(listId, taskId, updates) {
-  const token = await getUserToken(true);
-  if (!token) throw new Error("User not authenticated");
 
-  const backendPayload = {
-    ...updates,
-    listId,
-    status: updates.status ? denormalizeStatus(updates.status) : undefined,
-    assignedTo: updates.assignedTo || null,
-  };
 
-  const { data } = await axios.put(
-    `${BASE_URL}/api/lists/${listId}/tasks/${taskId}`,
-    backendPayload,
-    { headers: { Authorization: `Bearer ${token}` } }
-  );
 
-  if (!data) throw new Error("No response received when updating local task");
 
-  return { ...data, status: normalizeStatus(data.status) };
-}
+<dl class="details">
 
-/**
- * Delete a local task.
- *
- * @async
- * @function deleteLocalTask
- * @param {string} listId - List ID.
- * @param {string} taskId - Task ID.
- * @returns {Promise&lt;Object>} Deletion result.
- */
-export async function deleteLocalTask(listId, taskId) {
-  const token = await getUserToken(true);
-  if (!token) throw new Error("User not authenticated");
+    
 
-  const { data } = await axios.delete(`${BASE_URL}/api/lists/${listId}/tasks/${taskId}`, {
-    headers: { Authorization: `Bearer ${token}` },
-  });
+    
 
-  return data;
-}
+    
 
-/**
- * 📌 PERSONAL TASKS
- */
+    
 
-/**
- * Fetch personal tasks.
- *
- * @async
- * @function getPersonalTasks
- * @returns {Promise&lt;Array&lt;Object>>} List of normalized personal tasks.
- */
-export async function getPersonalTasks() {
-  const token = await getUserToken(true);
-  if (!token) throw new Error("User not authenticated");
+    
 
-  const { data } = await axios.get(`${BASE_URL}/api/tasks/personal`, {
-    headers: { Authorization: `Bearer ${token}` },
-  });
+    
 
-  const tasks = Array.isArray(data)
-    ? data
-    : Array.isArray(data.items)
-    ? data.items
-    : Array.isArray(data.tasks)
-    ? data.tasks
-    : [];
+    
 
-  return tasks.map((t) => ({ ...t, status: normalizeStatus(t.status) }));
-}
+    
 
-/**
- * Create a personal task.
- *
- * @async
- * @function createPersonalTask
- * @param {Object} payload - Task data (e.g., { title, description, status }).
- * @returns {Promise&lt;Object>} Created task with normalized status.
- */
-export async function createPersonalTask(payload) {
-  const token = await getUserToken(true);
-  if (!token) throw new Error("User not authenticated");
+    
 
-  const { data } = await axios.post(`${BASE_URL}/api/tasks/personal`, payload, {
-    headers: { Authorization: `Bearer ${token}` },
-  });
+    
 
-  return { ...data, status: normalizeStatus(data.status) };
-}
+    
 
-/**
- * Update a personal task.
- *
- * @async
- * @function updatePersonalTask
- * @param {string} id - Task ID.
- * @param {Object} updates - Task updates.
- * @returns {Promise&lt;Object>} Updated task with normalized status.
- */
-export async function updatePersonalTask(id, updates) {
-  const token = await getUserToken(true);
-  if (!token) throw new Error("User not authenticated");
+    
 
-  const backendPayload = {
-    ...updates,
-    status: updates.status ? denormalizeStatus(updates.status) : undefined,
-  };
+    
+    <dt class="tag-source">Source:</dt>
+    <dd class="tag-source"><ul class="dummy"><li>
+        <a href="src_components_modals_AddMemberModal.jsx.html">src/components/modals/AddMemberModal.jsx</a>, <a href="src_components_modals_AddMemberModal.jsx.html#line1">line 1</a>
+    </li></ul></dd>
+    
 
-  const { data } = await axios.put(`${BASE_URL}/api/tasks/personal/${id}`, backendPayload, {
-    headers: { Authorization: `Bearer ${token}` },
-  });
+    
 
-  return { ...data, status: normalizeStatus(data.status) };
-}
+    
 
-/**
- * Delete a personal task.
- *
- * @async
- * @function deletePersonalTask
- * @param {string} id - Task ID.
- * @returns {Promise&lt;Object>} Deletion result.
- */
-export async function deletePersonalTask(id) {
-  const token = await getUserToken(true);
-  if (!token) throw new Error("User not authenticated");
+    
+</dl>
 
-  const { data } = await axios.delete(`${BASE_URL}/api/tasks/personal/${id}`, {
-    headers: { Authorization: `Bearer ${token}` },
-  });
 
-  return data;
-}
 
-/**
- * Fetch a personal task by ID.
- *
- * @async
- * @function getPersonalTaskById
- * @param {string} id - Task ID.
- * @returns {Promise&lt;Object>} Task data with normalized status.
- */
-export async function getPersonalTaskById(id) {
-  const token = await getUserToken(true);
-  if (!token) throw new Error("User not authenticated");
 
-  const { data } = await axios.get(`${BASE_URL}/api/tasks/personal/${id}`, {
-    headers: { Authorization: `Bearer ${token}` },
-  });
 
-  return { ...data, status: normalizeStatus(data.status) };
-}
 
-/**
- * 📌 TASKS BY LIST
- */
 
-/**
- * Fetch tasks by list ID.
- *
- * @async
- * @function getTasksByListId
- * @param {string} listId - List ID.
- * @returns {Promise&lt;Array&lt;Object>>} List of normalized tasks belonging to the list.
- */
-export async function getTasksByListId(listId) {
-  const token = await getUserToken(true);
-  if (!token) throw new Error("User not authenticated");
 
-  const { data } = await axios.get(`${BASE_URL}/api/lists/${listId}/tasks`, {
-    headers: { Authorization: `Bearer ${token}` },
-  });
 
-  const tasks = Array.isArray(data)
-    ? data
-    : Array.isArray(data.items)
-    ? data.items
-    : Array.isArray(data.tasks)
-    ? data.tasks
-    : [];
 
-  return tasks.map((t) => ({ ...t, status: normalizeStatus(t.status) }));
-}
-</code></pre>
-        </article>
-    </section>
+
+
+
+
+
+
+
+
+
+
+        
+    
+    </div>
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+        <h3 class="subsection-title">Methods</h3>
+
+        
+            
+
+    
+
+    
+    <h4 class="name" id="~AddMemberModal"><span class="type-signature">(inner) </span>AddMemberModal<span class="signature">(props)</span><span class="type-signature"> &rarr; {JSX.Element}</span></h4>
+    
+
+    
+
+
+
+<div class="description">
+    AddMemberModal component.
+</div>
+
+
+
+
+
+
+
+
+
+    <h5>Parameters:</h5>
+    
+
+<table class="params">
+    <thead>
+    <tr>
+        
+        <th>Name</th>
+        
+
+        <th>Type</th>
+
+        
+
+        
+
+        <th class="last">Description</th>
+    </tr>
+    </thead>
+
+    <tbody>
+    
+
+        <tr>
+            
+                <td class="name"><code>props</code></td>
+            
+
+            <td class="type">
+            
+                
+<span class="param-type">Object</span>
+
+
+            
+            </td>
+
+            
+
+            
+
+            <td class="description last">Component props.
+                <h6>Properties</h6>
+                
+
+<table class="params">
+    <thead>
+    <tr>
+        
+        <th>Name</th>
+        
+
+        <th>Type</th>
+
+        
+
+        
+
+        <th class="last">Description</th>
+    </tr>
+    </thead>
+
+    <tbody>
+    
+
+        <tr>
+            
+                <td class="name"><code>open</code></td>
+            
+
+            <td class="type">
+            
+                
+<span class="param-type">boolean</span>
+
+
+            
+            </td>
+
+            
+
+            
+
+            <td class="description last">Whether the modal is open.</td>
+        </tr>
+
+    
+
+        <tr>
+            
+                <td class="name"><code>onClose</code></td>
+            
+
+            <td class="type">
+            
+                
+<span class="param-type">function</span>
+
+
+            
+            </td>
+
+            
+
+            
+
+            <td class="description last">Function to close the modal.</td>
+        </tr>
+
+    
+
+        <tr>
+            
+                <td class="name"><code>projectId</code></td>
+            
+
+            <td class="type">
+            
+                
+<span class="param-type">string</span>
+
+
+            
+            </td>
+
+            
+
+            
+
+            <td class="description last">ID of the project to add a member to.</td>
+        </tr>
+
+    
+
+        <tr>
+            
+                <td class="name"><code>onMemberAdded</code></td>
+            
+
+            <td class="type">
+            
+                
+<span class="param-type">function</span>
+
+
+            
+            </td>
+
+            
+
+            
+
+            <td class="description last">Callback when a member is successfully added.</td>
+        </tr>
+
+    
+    </tbody>
+</table>
+
+            </td>
+        </tr>
+
+    
+    </tbody>
+</table>
+
+
+
+
+
+
+<dl class="details">
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+    <dt class="tag-source">Source:</dt>
+    <dd class="tag-source"><ul class="dummy"><li>
+        <a href="src_components_modals_AddMemberModal.jsx.html">src/components/modals/AddMemberModal.jsx</a>, <a href="src_components_modals_AddMemberModal.jsx.html#line30">line 30</a>
+    </li></ul></dd>
+    
+
+    
+
+    
+
+    
+</dl>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+<h5>Returns:</h5>
+
+        
+<div class="param-desc">
+    The rendered modal component.
+</div>
+
+
+
+<dl>
+    <dt>
+        Type
+    </dt>
+    <dd>
+        
+<span class="param-type">JSX.Element</span>
+
+
+    </dd>
+</dl>
+
+    
+
+
+
+
+
+        
+    
+
+    
+
+    
+</article>
+
+</section>
 
 
 
