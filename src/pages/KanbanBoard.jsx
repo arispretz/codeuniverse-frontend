@@ -437,8 +437,16 @@ const handleNewComment = (newComment) => {
         : proj
     )
   );
+
+  setViewingTask((prev) =>
+    prev
+      ? { ...prev, comments: [...(prev.comments || []), newComment] }
+      : prev
+  );
+
   enqueueSnackbar("Comment added 💬", { variant: "success" });
 };
+
 
   // --- Render ---
   return (
