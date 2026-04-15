@@ -415,6 +415,29 @@ const handleTaskUpdated = async (updatedTask) => {
   };
 }, [activeProjectId, user]);
 
+const handleNewComment = (newComment) => {
+  setProjects((prev) =>
+    prev.map((proj) =>
+      proj._id === activeProjectId
+        ? {
+            ...proj,
+            kanbanLists: proj.kanbanLists.map((list) =>
+              list._id === selectedListId
+                ? {
+                    ...list,
+                    tasks: list.tasks.map((t) =>
+                      t._id === viewingTask._id
+                        ? { ...t, comments: [...(t.comments || []), newComment] }
+                        : t
+                    ),
+                  }
+                : list
+            ),
+          }
+        : proj
+    )
+  );
+};
 
   // --- Render ---
   return (
@@ -510,6 +533,7 @@ const handleTaskUpdated = async (updatedTask) => {
         setSelectedListId={setSelectedListId}
         viewingTask={viewingTask}
         setViewingTask={setViewingTask}
+        handleNewComment={handleNewComment}
         platformUsers={platformUsers}
         handleTaskUpdated={handleTaskUpdated}
         editingTask={editingTask}
