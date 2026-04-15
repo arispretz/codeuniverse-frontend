@@ -437,6 +437,7 @@ const handleNewComment = (newComment) => {
         : proj
     )
   );
+  enqueueSnackbar("Comment added 💬", { variant: "success" });
 };
 
   // --- Render ---
