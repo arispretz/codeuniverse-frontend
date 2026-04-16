@@ -144,7 +144,7 @@
     
 
     
-    <h4 class="name" id="~addMemberToProject"><span class="type-signature">(async, inner) </span>addMemberToProject<span class="signature">(projectId, memberId)</span><span class="type-signature"> &rarr; {Promise.&lt;Object>}</span></h4>
+    <h4 class="name" id="~addMemberToProject"><span class="type-signature">(async, inner) </span>addMemberToProject<span class="signature">(projectId, options)</span><span class="type-signature"> &rarr; {Promise.&lt;Object>}</span></h4>
     
 
     
@@ -211,6 +211,50 @@
 
         <tr>
             
+                <td class="name"><code>options</code></td>
+            
+
+            <td class="type">
+            
+                
+<span class="param-type">Object</span>
+
+
+            
+            </td>
+
+            
+
+            
+
+            <td class="description last">Options with either memberId or email.
+                <h6>Properties</h6>
+                
+
+<table class="params">
+    <thead>
+    <tr>
+        
+        <th>Name</th>
+        
+
+        <th>Type</th>
+
+        
+        <th>Attributes</th>
+        
+
+        
+
+        <th class="last">Description</th>
+    </tr>
+    </thead>
+
+    <tbody>
+    
+
+        <tr>
+            
                 <td class="name"><code>memberId</code></td>
             
 
@@ -224,10 +268,60 @@
             </td>
 
             
+                <td class="attributes">
+                
+                    &lt;optional><br>
+                
+
+                
+
+                
+                </td>
+            
 
             
 
             <td class="description last">User ID of the member to add.</td>
+        </tr>
+
+    
+
+        <tr>
+            
+                <td class="name"><code>email</code></td>
+            
+
+            <td class="type">
+            
+                
+<span class="param-type">string</span>
+
+
+            
+            </td>
+
+            
+                <td class="attributes">
+                
+                    &lt;optional><br>
+                
+
+                
+
+                
+                </td>
+            
+
+            
+
+            <td class="description last">Email of the member to add.</td>
+        </tr>
+
+    
+    </tbody>
+</table>
+
+            </td>
         </tr>
 
     
@@ -321,7 +415,7 @@
 
     <h5>Example</h5>
     
-    <pre class="prettyprint"><code>const updated = await addMemberToProject("proj123", "user456");console.log(updated.members);</code></pre>
+    <pre class="prettyprint"><code>const updated = await addMemberToProject("proj123", { memberId: "user456" });const updated = await addMemberToProject("proj123", { email: "gracedev@demo.com" });</code></pre>
 
 
 
@@ -614,7 +708,7 @@
     
     <dt class="tag-source">Source:</dt>
     <dd class="tag-source"><ul class="dummy"><li>
-        <a href="src_services_projectService.js.html">src/services/projectService.js</a>, <a href="src_services_projectService.js.html#line302">line 302</a>
+        <a href="src_services_projectService.js.html">src/services/projectService.js</a>, <a href="src_services_projectService.js.html#line313">line 313</a>
     </li></ul></dd>
     
 
@@ -801,7 +895,7 @@
     
     <dt class="tag-source">Source:</dt>
     <dd class="tag-source"><ul class="dummy"><li>
-        <a href="src_services_projectService.js.html">src/services/projectService.js</a>, <a href="src_services_projectService.js.html#line202">line 202</a>
+        <a href="src_services_projectService.js.html">src/services/projectService.js</a>, <a href="src_services_projectService.js.html#line213">line 213</a>
     </li></ul></dd>
     
 
@@ -1142,7 +1236,7 @@
     
     <dt class="tag-source">Source:</dt>
     <dd class="tag-source"><ul class="dummy"><li>
-        <a href="src_services_projectService.js.html">src/services/projectService.js</a>, <a href="src_services_projectService.js.html#line240">line 240</a>
+        <a href="src_services_projectService.js.html">src/services/projectService.js</a>, <a href="src_services_projectService.js.html#line251">line 251</a>
     </li></ul></dd>
     
 
@@ -1324,7 +1418,7 @@
     
     <dt class="tag-source">Source:</dt>
     <dd class="tag-source"><ul class="dummy"><li>
-        <a href="src_services_projectService.js.html">src/services/projectService.js</a>, <a href="src_services_projectService.js.html#line279">line 279</a>
+        <a href="src_services_projectService.js.html">src/services/projectService.js</a>, <a href="src_services_projectService.js.html#line290">line 290</a>
     </li></ul></dd>
     
 
@@ -1483,7 +1577,7 @@
     
     <dt class="tag-source">Source:</dt>
     <dd class="tag-source"><ul class="dummy"><li>
-        <a href="src_services_projectService.js.html">src/services/projectService.js</a>, <a href="src_services_projectService.js.html#line349">line 349</a>
+        <a href="src_services_projectService.js.html">src/services/projectService.js</a>, <a href="src_services_projectService.js.html#line360">line 360</a>
     </li></ul></dd>
     
 
@@ -1720,7 +1814,7 @@
     
     <dt class="tag-source">Source:</dt>
     <dd class="tag-source"><ul class="dummy"><li>
-        <a href="src_services_projectService.js.html">src/services/projectService.js</a>, <a href="src_services_projectService.js.html#line325">line 325</a>
+        <a href="src_services_projectService.js.html">src/services/projectService.js</a>, <a href="src_services_projectService.js.html#line336">line 336</a>
     </li></ul></dd>
     
 
@@ -1884,7 +1978,7 @@
     
     <dt class="tag-source">Source:</dt>
     <dd class="tag-source"><ul class="dummy"><li>
-        <a href="src_services_projectService.js.html">src/services/projectService.js</a>, <a href="src_services_projectService.js.html#line221">line 221</a>
+        <a href="src_services_projectService.js.html">src/services/projectService.js</a>, <a href="src_services_projectService.js.html#line232">line 232</a>
     </li></ul></dd>
     
 
@@ -3159,7 +3253,7 @@
     
     <dt class="tag-source">Source:</dt>
     <dd class="tag-source"><ul class="dummy"><li>
-        <a href="src_services_projectService.js.html">src/services/projectService.js</a>, <a href="src_services_projectService.js.html#line259">line 259</a>
+        <a href="src_services_projectService.js.html">src/services/projectService.js</a>, <a href="src_services_projectService.js.html#line270">line 270</a>
     </li></ul></dd>
     
 
@@ -3233,7 +3327,7 @@
 <br class="clear">
 
 <footer>
-    Documentation generated by <a href="https://github.com/jsdoc/jsdoc">JSDoc 4.0.5</a> on Thu Apr 16 2026 17:42:53 GMT-0300 (Argentina Standard Time)
+    Documentation generated by <a href="https://github.com/jsdoc/jsdoc">JSDoc 4.0.5</a> on Thu Apr 16 2026 19:01:18 GMT-0300 (Argentina Standard Time)
 </footer>
 
 <script> prettyPrint(); </script>

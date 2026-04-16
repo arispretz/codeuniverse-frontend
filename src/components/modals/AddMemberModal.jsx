@@ -33,21 +33,26 @@ const AddMemberModal = ({ open, onClose, projectId, onMemberAdded }) => {
   const [memberId, setMemberId] = useState("");
 
   const handleSubmit = async () => {
-    if (!memberId?.trim()) {
-      enqueueSnackbar("⚠️ Please enter a user ID or email.", { variant: "warning" });
-      return;
-    }
+  if (!memberId?.trim()) {
+    enqueueSnackbar("⚠️ Please enter a user ID or email.", { variant: "warning" });
+    return;
+  }
 
-    try {
-      const result = await addMemberToProject(projectId, memberId.trim());
-      onMemberAdded(result.project);
-      enqueueSnackbar("✅ Member added successfully!", { variant: "success" });
-      onClose();
-    } catch (err) {
-      console.error("❌ Error adding member:", err.message);
-      enqueueSnackbar("Error adding member ❌", { variant: "error" });
-    }
-  };
+  try {
+    const isEmail = memberId.includes("@");
+    const result = await addMemberToProject(projectId, 
+      isEmail ? { email: memberId.trim() } : { memberId: memberId.trim() }
+    );
+
+    onMemberAdded(result.project);
+    enqueueSnackbar("✅ Member added successfully!", { variant: "success" });
+    onClose();
+  } catch (err) {
+    console.error("❌ Error adding member:", err);
+    const message = err.response?.data?.error || err.message;
+    enqueueSnackbar(`Error adding member ❌ ${message}`, { variant: "error" });
+  }
+};
 
   return (
     <Dialog open={open} onClose={onClose}>

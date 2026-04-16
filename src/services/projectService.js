@@ -170,20 +170,30 @@ export async function createFullProject(payload) {
  * @async
  * @function addMemberToProject
  * @param {string} projectId - Project ID.
- * @param {string} memberId - User ID of the member to add.
+ * @param {Object} options - Options with either memberId or email.
+ * @param {string} [options.memberId] - User ID of the member to add.
+ * @param {string} [options.email] - Email of the member to add.
  * @returns {Promise<Object>} Updated project data with members.
  *
  * @example
- * const updated = await addMemberToProject("proj123", "user456");
- * console.log(updated.members);
+ * const updated = await addMemberToProject("proj123", { memberId: "user456" });
+ * const updated = await addMemberToProject("proj123", { email: "gracedev@demo.com" });
  */
-export async function addMemberToProject(projectId, memberId) {
+export async function addMemberToProject(projectId, { memberId, email }) {
   const token = await getUserToken(true);
   if (!token) throw new Error("User not authenticated");
 
+  if (!memberId && !email) {
+    throw new Error("Either memberId or email must be provided");
+  }
+
+  const payload = {};
+  if (memberId) payload.memberId = memberId;
+  if (email) payload.email = email;
+
   const { data } = await axios.post(
     `${BASE_URL}/api/projects/${projectId}/members`,
-    { memberId },
+    payload,
     {
       headers: {
         "Content-Type": "application/json",
@@ -194,6 +204,7 @@ export async function addMemberToProject(projectId, memberId) {
 
   return data;
 }
+
 
 /**
  * 📋 LOCAL LISTS
