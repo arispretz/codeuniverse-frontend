@@ -16,6 +16,7 @@ import {
   Button,
 } from "@mui/material";
 import { addMemberToProject } from "../../services/projectService.js";
+import { useSnackbar } from "notistack";
 
 /**
  * AddMemberModal component.
@@ -28,21 +29,29 @@ import { addMemberToProject } from "../../services/projectService.js";
  * @returns {JSX.Element} The rendered modal component.
  */
 const AddMemberModal = ({ open, onClose, projectId, onMemberAdded }) => {
+  const { enqueueSnackbar } = useSnackbar();
   const [memberId, setMemberId] = useState("");
 
   const handleSubmit = async () => {
+    if (!memberId?.trim()) {
+      enqueueSnackbar("⚠️ Please enter a user ID or email.", { variant: "warning" });
+      return;
+    }
+
     try {
-      const result = await addMemberToProject(projectId, memberId);
+      const result = await addMemberToProject(projectId, memberId.trim());
       onMemberAdded(result.project);
+      enqueueSnackbar("✅ Member added successfully!", { variant: "success" });
       onClose();
-    } catch {
-      alert("Error adding member ❌");
+    } catch (err) {
+      console.error("❌ Error adding member:", err.message);
+      enqueueSnackbar("Error adding member ❌", { variant: "error" });
     }
   };
 
   return (
     <Dialog open={open} onClose={onClose}>
-      <DialogTitle>Add Member to Project</DialogTitle>
+      <DialogTitle>➕ Add Member to Project</DialogTitle>
       <DialogContent>
         <TextField
           label="User ID or Email"
@@ -52,9 +61,9 @@ const AddMemberModal = ({ open, onClose, projectId, onMemberAdded }) => {
         />
       </DialogContent>
       <DialogActions>
-        <Button onClick={onClose}>Cancel</Button>
+        <Button onClick={onClose}>❌ Cancel</Button>
         <Button onClick={handleSubmit} variant="contained">
-          Add
+          ✅ Add
         </Button>
       </DialogActions>
     </Dialog>
