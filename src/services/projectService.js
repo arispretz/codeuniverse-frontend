@@ -177,7 +177,7 @@ export async function createFullProject(payload) {
  *
  * @example
  * const updated = await addMemberToProject("proj123", { memberId: "user456" });
- * const updated = await addMemberToProject("proj123", { email: "gracedev@demo.com" });
+ * const updated = await addMemberToProject("proj123", { email: "username@demo.com" });
  */
 export async function addMemberToProject(projectId, { memberId, email }) {
   const token = await getUserToken(true);
@@ -191,20 +191,23 @@ export async function addMemberToProject(projectId, { memberId, email }) {
   if (memberId) payload.memberId = memberId;
   if (email) payload.email = email;
 
-  const { data } = await axios.post(
-    `${BASE_URL}/api/projects/${projectId}/members`,
-    payload,
-    {
-      headers: {
-        "Content-Type": "application/json",
-        Authorization: `Bearer ${token}`,
-      },
-    }
-  );
-
-  return data;
+  try {
+    const { data } = await axios.post(
+      `${BASE_URL}/api/projects/${projectId}/members`,
+      payload,
+      {
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${token}`,
+        },
+      }
+    );
+    return data;
+  } catch (err) {
+    console.error("❌ Error adding member:", err);
+    throw err;
+  }
 }
-
 
 /**
  * 📋 LOCAL LISTS

@@ -28,6 +28,7 @@ import { useSnackbar } from "notistack";
  * @param {Function} props.onMemberAdded - Callback when a member is successfully added.
  * @returns {JSX.Element} The rendered modal component.
  */
+
 const AddMemberModal = ({ open, onClose, projectId, onMemberAdded }) => {
   const { enqueueSnackbar } = useSnackbar();
   const [memberId, setMemberId] = useState("");
@@ -39,16 +40,18 @@ const AddMemberModal = ({ open, onClose, projectId, onMemberAdded }) => {
   }
 
   try {
-    const isEmail = memberId.includes("@");
-    const result = await addMemberToProject(projectId, 
-      isEmail ? { email: memberId.trim() } : { memberId: memberId.trim() }
+    const input = memberId.trim();
+    const isEmail = input.includes("@");
+
+    const result = await addMemberToProject(
+      projectId,
+      isEmail ? { email: input } : { memberId: input }
     );
 
     onMemberAdded(result.project);
     enqueueSnackbar("✅ Member added successfully!", { variant: "success" });
     onClose();
   } catch (err) {
-    console.error("❌ Error adding member:", err);
     const message = err.response?.data?.error || err.message;
     enqueueSnackbar(`Error adding member ❌ ${message}`, { variant: "error" });
   }
