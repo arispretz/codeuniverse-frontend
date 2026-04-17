@@ -18,44 +18,41 @@ import {
 import { addMemberToProject } from "../../services/projectService.js";
 import { useSnackbar } from "notistack";
 
-/**
- * AddMemberModal component.
- *
- * @param {Object} props - Component props.
- * @param {boolean} props.open - Whether the modal is open.
- * @param {Function} props.onClose - Function to close the modal.
- * @param {string} props.projectId - ID of the project to add a member to.
- * @param {Function} props.onMemberAdded - Callback when a member is successfully added.
- * @returns {JSX.Element} The rendered modal component.
- */
-
 const AddMemberModal = ({ open, onClose, projectId, onMemberAdded }) => {
   const { enqueueSnackbar } = useSnackbar();
   const [memberId, setMemberId] = useState("");
 
   const handleSubmit = async () => {
-  if (!memberId?.trim()) {
-    enqueueSnackbar("⚠️ Please enter a user ID or email.", { variant: "warning" });
-    return;
-  }
+    if (!memberId?.trim()) {
+      enqueueSnackbar("⚠️ Please enter a user ID or email.", { variant: "warning" });
+      return;
+    }
 
-  try {
-    const input = memberId.trim();
-    const isEmail = input.includes("@");
+    try {
+      const input = memberId.trim();
+      const isEmail = input.includes("@");
 
-    const result = await addMemberToProject(
-      projectId,
-      isEmail ? { email: input } : { memberId: input }
-    );
+      console.log("=== AddMemberModal handleSubmit ===");
+      console.log("Project ID:", projectId);
+      console.log("Raw input:", input);
+      console.log("Is email?:", isEmail);
 
-    onMemberAdded(result.project);
-    enqueueSnackbar("✅ Member added successfully!", { variant: "success" });
-    onClose();
-  } catch (err) {
-    const message = err.response?.data?.error || err.message;
-    enqueueSnackbar(`Error adding member ❌ ${message}`, { variant: "error" });
-  }
-};
+      const result = await addMemberToProject(
+        projectId,
+        isEmail ? { email: input } : { memberId: input }
+      );
+
+      console.log("Backend result:", result);
+
+      onMemberAdded(result.project);
+      enqueueSnackbar("✅ Member added successfully!", { variant: "success" });
+      onClose();
+    } catch (err) {
+      console.error("❌ Error in AddMemberModal handleSubmit:", err);
+      const message = err.response?.data?.error || err.message;
+      enqueueSnackbar(`Error adding member ❌ ${message}`, { variant: "error" });
+    }
+  };
 
   return (
     <Dialog open={open} onClose={onClose}>
