@@ -32,23 +32,14 @@ const AddMemberModal = ({ open, onClose, projectId, onMemberAdded }) => {
       const input = memberId.trim();
       const isEmail = input.includes("@");
 
-      console.log("=== AddMemberModal handleSubmit ===");
-      console.log("Project ID:", projectId);
-      console.log("Raw input:", input);
-      console.log("Is email?:", isEmail);
-
       const result = await addMemberToProject(
         projectId,
         isEmail ? { email: input } : { memberId: input }
       );
 
-      console.log("Backend result:", result);
-
       onMemberAdded(result.project);
-      enqueueSnackbar("✅ Member added successfully!", { variant: "success" });
       onClose();
     } catch (err) {
-      console.error("❌ Error in AddMemberModal handleSubmit:", err);
       const message = err.response?.data?.error || err.message;
       enqueueSnackbar(`Error adding member ❌ ${message}`, { variant: "error" });
     }

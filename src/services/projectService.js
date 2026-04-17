@@ -193,11 +193,6 @@ export async function addMemberToProject(projectId, { memberId, email }) {
   if (email) payload.email = email;
 
   try {
-    console.log("=== addMemberToProject called ===");
-    console.log("Project ID:", projectId);
-    console.log("Payload being sent:", payload);
-    console.log("Authorization token (truncated):", token.substring(0, 20) + "...");
-
     const { data } = await axios.post(
       `${BASE_URL}/api/projects/${projectId}/members`,
       payload,
@@ -209,7 +204,6 @@ export async function addMemberToProject(projectId, { memberId, email }) {
       }
     );
 
-    console.log("Response data from backend:", data);
     return data;
   } catch (err) {
     console.error("❌ Error adding member:", err);
