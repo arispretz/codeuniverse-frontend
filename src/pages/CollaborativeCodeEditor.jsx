@@ -95,7 +95,7 @@ const CollaborativeCodeEditor = () => {
   return (
     <Box sx={{ display: 'flex', width: '100%', minHeight: '100vh', overflow: 'hidden' }}>
       {/* 📂 File Tree */}
-      <Box sx={{ width: 200, borderRight: '1px solid #444', overflowY: 'auto' }}>
+      <Box sx={{ width: 300, borderRight: '1px solid #444', overflowY: 'auto' }}>
         <FileTree
           projectId={projectId}
           onOpenFile={handleOpenFile}
@@ -160,7 +160,7 @@ const CollaborativeCodeEditor = () => {
       </Box>
 
       {/* 🤖 Assistant Sidebar */}
-      <Box sx={{ width: 300, p: 2, borderLeft: '1px solid #444', overflowY: 'auto' }}>
+      <Box sx={{ width: 400, p: 2, borderLeft: '1px solid #444', overflowY: 'auto' }}>
         <AssistantSidebar
           language={language}
           setLanguage={setLanguage}
