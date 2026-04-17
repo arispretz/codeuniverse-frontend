@@ -43,6 +43,7 @@ import {
  * @function PersonalTasksBoard
  * @returns {JSX.Element} Personal tasks board layout
  */
+
 const PersonalTasksBoard = () => {
   const [tasks, setTasks] = useState([]);
   const [form, setForm] = useState({ title: "", description: "" });

@@ -36,6 +36,7 @@ import { getProjects } from "../services/projectService.js";
  * @function ProjectDashboard
  * @returns {JSX.Element} Project dashboard layout
  */
+
 const ProjectDashboard = () => {
   const [projects, setProjects] = useState([]);
   const [selectedProjectId, setSelectedProjectId] = useState(null);

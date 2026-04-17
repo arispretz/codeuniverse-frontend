@@ -106,12 +106,12 @@ const KanbanBoard = () => {
   const [viewingTask, setViewingTask] = useState(null);
 
   const canEditOrDelete = (task) => {
-    if (role === "manager" || role === "admin") return true;
-    if (role === "developer") {
-      return isUserAssigned(task, userMongoId, firebaseUid);
-    }
-    return false;
-  };
+  if (role === "manager" || role === "admin") return true;
+  if (role === "developer") {
+    return isUserAssigned(task, userMongoId, firebaseUid);
+  }
+  return false;
+};
 
   // ✅ Fetch tasks for the active project
   const fetchProjectTasks = async () => {

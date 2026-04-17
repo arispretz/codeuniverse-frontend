@@ -241,12 +241,12 @@ const LocalTaskBoard = () => {
 
   // Permissions
   const canEditOrDelete = (task) => {
-    if (role === "manager" || role === "admin") return true;
-    if (role === "developer") {
-      return isUserAssigned(task, userMongoId, firebaseUid);
-    }
-    return false;
-  };
+  if (role === "manager" || role === "admin") return true;
+  if (role === "developer") {
+    return isUserAssigned(task, userMongoId, firebaseUid);
+  }
+  return false;
+};
 
   return (
     <Box sx={{ p: 3 }}>
