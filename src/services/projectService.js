@@ -180,6 +180,8 @@ export async function createFullProject(payload) {
  * const updated = await addMemberToProject("proj123", { email: "username@demo.com" });
  */
 export async function addMemberToProject(projectId, { memberId, email }) {
+	console.log("req.user at controller:", req.user);
+
   const token = await getUserToken(true);
   if (!token) throw new Error("User not authenticated");
 
