@@ -121,14 +121,14 @@ const ProjectManagementDashboard = () => {
   };
 
   const filteredProjects = projects.filter(
-    (project) =>
-      (!filters.owner || project.members?.some((m) => m.name === filters.owner)) &&
-      (!filters.status || project.status === filters.status) &&
-      (!filters.tag || project.tag === filters.tag) &&
-      (!filters.search ||
-        project.name.toLowerCase().includes(filters.search.toLowerCase()) ||
-        project.description.toLowerCase().includes(filters.search.toLowerCase()))
-  );
+  (project) =>
+    (!filters.owner || project.members?.some((m) => m.username === filters.owner)) &&
+    (!filters.status || project.status === filters.status) &&
+    (!filters.tag || project.tag === filters.tag) &&
+    (!filters.search ||
+      project.name.toLowerCase().includes(filters.search.toLowerCase()) ||
+      project.description.toLowerCase().includes(filters.search.toLowerCase()))
+);
 
   const handleProjectSubmit = (newProject) => {
     setProjects((prev) => [...prev, newProject]);
@@ -273,8 +273,8 @@ const ProjectManagementDashboard = () => {
             <Select value={filters.owner} onChange={handleFilterChange("owner")}>
               <MenuItem value="">All</MenuItem>
               {projects.flatMap((p) => p.members || []).map((m, idx) => (
-                <MenuItem key={idx} value={m.name}>
-                  {m.name}
+                <MenuItem key={idx} value={m.username}>
+                  {m.username}
                 </MenuItem>
               ))}
             </Select>
@@ -322,10 +322,10 @@ const ProjectManagementDashboard = () => {
                     {project.members.map((member, idx) => (
                       <Avatar
                         key={idx}
-                        alt={member?.name || "Anon"}
-                        src={member?.avatar || ""}
+                        alt={member?.username || "Anon"}
+                        src={member?.avatarUrl || ""}
                       >
-                        {member?.name?.[0] || "?"}
+                        {member?.username?.[0] || "?"}
                       </Avatar>
                     ))}
                   </AvatarGroup>
@@ -639,7 +639,7 @@ const ProjectManagementDashboard = () => {
         projectId={selectedProject}
       />
 
-            {/* Task management modals */}
+      {/* Task management modals */}
       <TaskDetailModal
         open={openView}
         onClose={() => setOpenView(false)}
