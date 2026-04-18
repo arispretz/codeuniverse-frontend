@@ -95,7 +95,7 @@ const CollaborativeCodeEditor = () => {
   return (
     <Box sx={{ display: 'flex', width: '100%', minHeight: '100vh', overflow: 'hidden' }}>
       {/* 📂 File Tree */}
-      <Box sx={{ width: 180, borderRight: '1px solid #444', overflowY: 'auto', ml: '5px' }}>
+      <Box sx={{ width: 180, borderRight: '1px solid #444', overflowY: 'auto', pl: '5px' }}>
         <FileTree
           projectId={projectId}
           onOpenFile={handleOpenFile}
