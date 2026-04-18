@@ -227,7 +227,7 @@ export function PrivateLayout({ children }) {
         component="main"
         sx={{
           flexGrow: 5,
-          pr: 2,
+          pr: 20,
           maxWidth: `calc(100% - ${drawerWidth}px)`,
           overflowX: "hidden",
         }}
