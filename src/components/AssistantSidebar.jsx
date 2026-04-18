@@ -141,6 +141,7 @@ const AssistantSidebar = ({
         display: "flex",
         flexDirection: "column",
         height: "100%",
+        overflowX: 'hidden',
       }}
     >
       <Typography variant="subtitle1">🧠 Code Assistant</Typography>
