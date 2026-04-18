@@ -160,7 +160,7 @@ const CollaborativeCodeEditor = () => {
       </Box>
 
       {/* 🤖 Assistant Sidebar */}
-      <Box sx={{ width: 400, p: 2, borderLeft: '1px solid #444', overflowY: 'auto' }}>
+      <Box sx={{ width: 360, p: 2, borderLeft: '1px solid #444', overflowY: 'auto' }}>
         <AssistantSidebar
           language={language}
           setLanguage={setLanguage}
