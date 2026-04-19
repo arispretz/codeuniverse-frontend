@@ -196,26 +196,31 @@ const LocalTaskBoard = () => {
   };
 
   const handleUpdate = async () => {
-    try {
-      const updatedTask = await updateLocalTask(
-        selectedListId,
-        selectedTask._id,
-        form
-      );
+  try {
+    const updatedTask = await updateLocalTask(
+      selectedListId,
+      selectedTask._id,
+      form
+    );
 
-      setAllTasks((prev) =>
-        prev.map((t) => (t._id === selectedTask._id ? updatedTask : t))
-      );
+    const mergedTask = {
+      ...selectedTask,   
+      ...updatedTask,    
+    };
 
-      setOpenEdit(false);
-      setSelectedTask(null);
-      enqueueSnackbar("Task updated successfully ✅", { variant: "success" });
+    setAllTasks((prev) =>
+      prev.map((t) => (t._id === selectedTask._id ? mergedTask : t))
+    );
 
-      window.dispatchEvent(new Event("tasksUpdated"));
-    } catch {
-      enqueueSnackbar("Error updating local task ❌", { variant: "error" });
-    }
-  };
+    setOpenEdit(false);
+    setSelectedTask(null);
+    enqueueSnackbar("Task updated successfully ✅", { variant: "success" });
+
+    window.dispatchEvent(new Event("tasksUpdated"));
+  } catch {
+    enqueueSnackbar("Error updating local task ❌", { variant: "error" });
+  }
+};
 
   const handleView = (task) => {
     setSelectedTask(task);
