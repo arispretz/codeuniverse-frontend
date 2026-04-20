@@ -662,9 +662,58 @@ const ProjectManagementDashboard = () => {
         open={openConfirmDelete}
         onClose={() => setOpenConfirmDelete(false)}
         task={selectedTask}
-        onTaskDeleted={(deletedTask) => {
-          setAllTasks((prev) => prev.filter((t) => t._id !== deletedTask._id));
-          showSnackbar("Task deleted ✅", "success");
+        onTaskDeleted={async (deletedTask) => {
+          try {
+            if (deletedTask.source === "kanban") {
+              await deleteKanbanTask(deletedTask._id);
+              setProjects((prev) =>
+                prev.map((proj) =>
+                  proj._id === selectedProject
+                    ? {
+                        ...proj,
+                        kanbanLists: proj.kanbanLists.map((list) =>
+                          list._id === deletedTask.listId
+                            ? {
+                                ...list,
+                                tasks: list.tasks.filter((t) => t._id !== deletedTask._id),
+                              }
+                            : list
+                        ),
+                      }
+                    : proj
+                )
+              );
+            } else if (deletedTask.source === "local") {
+              await deleteLocalTask(deletedTask.listId, deletedTask._id);
+              setProjects((prev) =>
+                prev.map((proj) =>
+                  proj._id === selectedProject
+                    ? {
+                        ...proj,
+                        localLists: proj.localLists.map((list) =>
+                          list._id === deletedTask.listId
+                            ? {
+                                ...list,
+                                tasks: list.tasks.filter((t) => t._id !== deletedTask._id),
+                              }
+                            : list
+                        ),
+                      }
+                    : proj
+                )
+              );
+            }
+
+            setAllTasks((prev) => prev.filter((t) => t._id !== deletedTask._id));
+            showSnackbar(`Task "${deletedTask.title}" deleted ✅`, "success");
+            window.dispatchEvent(new Event("tasksUpdated"));
+          } catch (err) {
+            console.error("❌ Error deleting task:", err);
+            showSnackbar("Error deleting task ❌", "error");
+          } finally {
+            setOpenConfirmDelete(false);
+            setSelectedTask(null);
+          }
         }}
       />
 

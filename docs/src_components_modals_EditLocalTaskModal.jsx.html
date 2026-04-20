@@ -51,41 +51,11 @@ import CloseIcon from "@mui/icons-material/Close";
 import { DatePicker } from "@mui/x-date-pickers";
 import { denormalizeStatus } from "../KanbanUtils.jsx";
 
-/**
- * EditLocalTaskModal Component
- *
- * @function EditLocalTaskModal
- * @param {Object} props - Component props.
- * @param {boolean} props.open - Controls whether the modal is open.
- * @param {Function} props.onClose - Callback to close the modal.
- * @param {Object} props.form - Current form state representing the task.
- * @param {string} props.form.title - Task title.
- * @param {string} props.form.description - Task description.
- * @param {string} props.form.status - Task status ("todo", "inprogress", "review", "done").
- * @param {string} props.form.priority - Task priority ("high", "medium", "low").
- * @param {Date|string|null} [props.form.deadline] - Optional deadline date.
- * @param {string|null} [props.form.assignedTo] - Optional assigned user ID.
- * @param {Function} props.setForm - State setter to update the form.
- * @param {Function} props.handleUpdate - Callback triggered when the task is updated.
- * @returns {JSX.Element} Modal dialog for editing a local task.
- */
 const EditLocalTaskModal = ({ open, onClose, form, setForm, handleUpdate }) => {
-  /**
-   * Updates a specific field in the form state.
-   *
-   * @param {string} field - Field name to update.
-   * @param {any} value - New value for the field.
-   */
   const handleChange = (field, value) => {
     setForm((prev) => ({ ...prev, [field]: value }));
   };
 
-  /**
-   * Validates required fields and triggers the update callback.
-   *
-   * @function handleSave
-   * @returns {void}
-   */
   const handleSave = () => {
     if (!form.title?.trim() || !form.description?.trim()) {
       console.error("⚠️ Title and description are required.");
@@ -96,7 +66,11 @@ const EditLocalTaskModal = ({ open, onClose, form, setForm, handleUpdate }) => {
       ...form,
       status: denormalizeStatus(form.status),
       deadline: form.deadline ? new Date(form.deadline).toISOString() : null,
-      assignedTo: form.assignedTo || null,
+      assignedTo: form.assignedTo?._id || form.assignedTo || null,
+      assignees: (form.assignees || []).map((id) =>
+        typeof id === "object" &amp;&amp; id._id ? id._id : id
+      ),
+      source: "local",
     };
 
     handleUpdate(payload);
@@ -117,7 +91,6 @@ const EditLocalTaskModal = ({ open, onClose, form, setForm, handleUpdate }) => {
           position: "relative",
         }}
       >
-        {/* Close button */}
         &lt;IconButton
           aria-label="close"
           onClick={onClose}
@@ -131,15 +104,12 @@ const EditLocalTaskModal = ({ open, onClose, form, setForm, handleUpdate }) => {
           &lt;CloseIcon />
         &lt;/IconButton>
 
-        {/* Modal title */}
         &lt;Typography variant="h6" gutterBottom>
           ✏️ Edit Local Task
         &lt;/Typography>
 
         &lt;Box sx={{ display: "flex", gap: 3 }}>
-          {/* Edit panel */}
           &lt;Box sx={{ flex: 1 }}>
-            {/* Title */}
             &lt;TextField
               label="📝 Title"
               fullWidth
@@ -149,7 +119,6 @@ const EditLocalTaskModal = ({ open, onClose, form, setForm, handleUpdate }) => {
               sx={{ mb: 2 }}
             />
 
-            {/* Description */}
             &lt;TextField
               label="📄 Description"
               fullWidth
@@ -161,7 +130,6 @@ const EditLocalTaskModal = ({ open, onClose, form, setForm, handleUpdate }) => {
               sx={{ mb: 2 }}
             />
 
-            {/* Priority */}
             &lt;Typography variant="subtitle2">⚡ Priority&lt;/Typography>
             &lt;Box sx={{ display: "flex", gap: 1, mb: 2 }}>
               {["high", "medium", "low"].map((p) => (
@@ -174,7 +142,6 @@ const EditLocalTaskModal = ({ open, onClose, form, setForm, handleUpdate }) => {
               ))}
             &lt;/Box>
 
-            {/* Status */}
             &lt;Typography variant="subtitle2">📌 Status&lt;/Typography>
             &lt;Select
               fullWidth
@@ -188,7 +155,6 @@ const EditLocalTaskModal = ({ open, onClose, form, setForm, handleUpdate }) => {
               &lt;MenuItem value="done">✅ Done&lt;/MenuItem>
             &lt;/Select>
 
-            {/* Deadline */}
             &lt;Typography variant="subtitle2">📅 Deadline&lt;/Typography>
             &lt;DatePicker
               value={form.deadline ? new Date(form.deadline) : null}
@@ -197,7 +163,6 @@ const EditLocalTaskModal = ({ open, onClose, form, setForm, handleUpdate }) => {
             />
           &lt;/Box>
 
-          {/* Preview panel */}
           &lt;Paper sx={{ flex: 1, p: 2, bgcolor: "background.paper" }}>
             &lt;Typography variant="h6">
               {form.title || "📝 Untitled"}
@@ -216,7 +181,6 @@ const EditLocalTaskModal = ({ open, onClose, form, setForm, handleUpdate }) => {
           &lt;/Paper>
         &lt;/Box>
 
-        {/* Action buttons */}
         &lt;Box sx={{ display: "flex", justifyContent: "flex-end", gap: 1, mt: 3 }}>
           &lt;Button onClick={onClose} aria-label="Cancel">
             ❌ Cancel
@@ -247,7 +211,7 @@ export default EditLocalTaskModal;
 <br class="clear">
 
 <footer>
-    Documentation generated by <a href="https://github.com/jsdoc/jsdoc">JSDoc 4.0.5</a> on Mon Apr 20 2026 17:34:31 GMT-0300 (Argentina Standard Time)
+    Documentation generated by <a href="https://github.com/jsdoc/jsdoc">JSDoc 4.0.5</a> on Mon Apr 20 2026 18:14:43 GMT-0300 (Argentina Standard Time)
 </footer>
 
 <script> prettyPrint(); </script>

@@ -23,41 +23,11 @@ import CloseIcon from "@mui/icons-material/Close";
 import { DatePicker } from "@mui/x-date-pickers";
 import { denormalizeStatus } from "../KanbanUtils.jsx";
 
-/**
- * EditLocalTaskModal Component
- *
- * @function EditLocalTaskModal
- * @param {Object} props - Component props.
- * @param {boolean} props.open - Controls whether the modal is open.
- * @param {Function} props.onClose - Callback to close the modal.
- * @param {Object} props.form - Current form state representing the task.
- * @param {string} props.form.title - Task title.
- * @param {string} props.form.description - Task description.
- * @param {string} props.form.status - Task status ("todo", "inprogress", "review", "done").
- * @param {string} props.form.priority - Task priority ("high", "medium", "low").
- * @param {Date|string|null} [props.form.deadline] - Optional deadline date.
- * @param {string|null} [props.form.assignedTo] - Optional assigned user ID.
- * @param {Function} props.setForm - State setter to update the form.
- * @param {Function} props.handleUpdate - Callback triggered when the task is updated.
- * @returns {JSX.Element} Modal dialog for editing a local task.
- */
 const EditLocalTaskModal = ({ open, onClose, form, setForm, handleUpdate }) => {
-  /**
-   * Updates a specific field in the form state.
-   *
-   * @param {string} field - Field name to update.
-   * @param {any} value - New value for the field.
-   */
   const handleChange = (field, value) => {
     setForm((prev) => ({ ...prev, [field]: value }));
   };
 
-  /**
-   * Validates required fields and triggers the update callback.
-   *
-   * @function handleSave
-   * @returns {void}
-   */
   const handleSave = () => {
     if (!form.title?.trim() || !form.description?.trim()) {
       console.error("⚠️ Title and description are required.");
@@ -68,7 +38,11 @@ const EditLocalTaskModal = ({ open, onClose, form, setForm, handleUpdate }) => {
       ...form,
       status: denormalizeStatus(form.status),
       deadline: form.deadline ? new Date(form.deadline).toISOString() : null,
-      assignedTo: form.assignedTo || null,
+      assignedTo: form.assignedTo?._id || form.assignedTo || null,
+      assignees: (form.assignees || []).map((id) =>
+        typeof id === "object" && id._id ? id._id : id
+      ),
+      source: "local",
     };
 
     handleUpdate(payload);
@@ -89,7 +63,6 @@ const EditLocalTaskModal = ({ open, onClose, form, setForm, handleUpdate }) => {
           position: "relative",
         }}
       >
-        {/* Close button */}
         <IconButton
           aria-label="close"
           onClick={onClose}
@@ -103,15 +76,12 @@ const EditLocalTaskModal = ({ open, onClose, form, setForm, handleUpdate }) => {
           <CloseIcon />
         </IconButton>
 
-        {/* Modal title */}
         <Typography variant="h6" gutterBottom>
           ✏️ Edit Local Task
         </Typography>
 
         <Box sx={{ display: "flex", gap: 3 }}>
-          {/* Edit panel */}
           <Box sx={{ flex: 1 }}>
-            {/* Title */}
             <TextField
               label="📝 Title"
               fullWidth
@@ -121,7 +91,6 @@ const EditLocalTaskModal = ({ open, onClose, form, setForm, handleUpdate }) => {
               sx={{ mb: 2 }}
             />
 
-            {/* Description */}
             <TextField
               label="📄 Description"
               fullWidth
@@ -133,7 +102,6 @@ const EditLocalTaskModal = ({ open, onClose, form, setForm, handleUpdate }) => {
               sx={{ mb: 2 }}
             />
 
-            {/* Priority */}
             <Typography variant="subtitle2">⚡ Priority</Typography>
             <Box sx={{ display: "flex", gap: 1, mb: 2 }}>
               {["high", "medium", "low"].map((p) => (
@@ -146,7 +114,6 @@ const EditLocalTaskModal = ({ open, onClose, form, setForm, handleUpdate }) => {
               ))}
             </Box>
 
-            {/* Status */}
             <Typography variant="subtitle2">📌 Status</Typography>
             <Select
               fullWidth
@@ -160,7 +127,6 @@ const EditLocalTaskModal = ({ open, onClose, form, setForm, handleUpdate }) => {
               <MenuItem value="done">✅ Done</MenuItem>
             </Select>
 
-            {/* Deadline */}
             <Typography variant="subtitle2">📅 Deadline</Typography>
             <DatePicker
               value={form.deadline ? new Date(form.deadline) : null}
@@ -169,7 +135,6 @@ const EditLocalTaskModal = ({ open, onClose, form, setForm, handleUpdate }) => {
             />
           </Box>
 
-          {/* Preview panel */}
           <Paper sx={{ flex: 1, p: 2, bgcolor: "background.paper" }}>
             <Typography variant="h6">
               {form.title || "📝 Untitled"}
@@ -188,7 +153,6 @@ const EditLocalTaskModal = ({ open, onClose, form, setForm, handleUpdate }) => {
           </Paper>
         </Box>
 
-        {/* Action buttons */}
         <Box sx={{ display: "flex", justifyContent: "flex-end", gap: 1, mt: 3 }}>
           <Button onClick={onClose} aria-label="Cancel">
             ❌ Cancel

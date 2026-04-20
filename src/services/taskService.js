@@ -106,7 +106,11 @@ export async function updateLocalTask(listId, taskId, updates) {
     ...updates,
     listId,
     status: updates.status ? denormalizeStatus(updates.status) : undefined,
-    assignedTo: updates.assignedTo || null,
+    assignedTo: updates.assignedTo?._id || updates.assignedTo || null,
+    assignees: (updates.assignees || []).map((a) =>
+      typeof a === "object" && a._id ? a._id : a
+    ),
+    source: "local",
   };
 
   const { data } = await axios.put(
@@ -133,9 +137,10 @@ export async function deleteLocalTask(listId, taskId) {
   const token = await getUserToken(true);
   if (!token) throw new Error("User not authenticated");
 
-  const { data } = await axios.delete(`${BASE_URL}/api/lists/${listId}/tasks/${taskId}`, {
-    headers: { Authorization: `Bearer ${token}` },
-  });
+  const { data } = await axios.delete(
+    `${BASE_URL}/api/lists/${listId}/tasks/${taskId}`,
+    { headers: { Authorization: `Bearer ${token}` } }
+  );
 
   return data;
 }
