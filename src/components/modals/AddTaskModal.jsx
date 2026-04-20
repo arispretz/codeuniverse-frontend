@@ -64,7 +64,6 @@ const AddTaskModal = ({ open, onClose, onTaskAdded, listId, projectId }) => {
         status: denormalizeStatus(formData.status),
         projectId,
         deadline: formData.deadline ? formData.deadline.toISOString() : null, 
-        // ✅ Normalizamos siempre al _id de Mongo
         assignees: (formData.assignees || []).map((id) =>
           typeof id === "object" && id._id ? id._id : id
         ),
@@ -105,7 +104,6 @@ const AddTaskModal = ({ open, onClose, onTaskAdded, listId, projectId }) => {
       enqueueSnackbar("⚠️ Missing project or list information.", { variant: "warning" });
       return;
     }
-
     if (isNaN(deadline.getTime())) {
       enqueueSnackbar("⚠️ Invalid deadline date.", { variant: "warning" });
       return;
@@ -146,7 +144,58 @@ const AddTaskModal = ({ open, onClose, onTaskAdded, listId, projectId }) => {
           ➕ Add Local Task
         </Typography>
 
-        {/* ... resto del formulario igual ... */}
+        <TextField
+          label="📝 Title"
+          fullWidth
+          required
+          value={form.title}
+          onChange={(e) => handleChange("title", e.target.value)}
+          sx={{ mb: 2 }}
+        />
+        <TextField
+          label="📄 Description"
+          fullWidth
+          multiline
+          rows={3}
+          required
+          value={form.description}
+          onChange={(e) => handleChange("description", e.target.value)}
+          sx={{ mb: 2 }}
+        />
+
+        <FormControl fullWidth sx={{ mb: 2 }}>
+          <InputLabel>Status</InputLabel>
+          <Select
+            value={form.status}
+            label="Status"
+            onChange={(e) => handleChange("status", e.target.value)}
+          >
+            <MenuItem value="todo">📝 To Do</MenuItem>
+            <MenuItem value="inprogress">🔄 In Progress</MenuItem>
+            <MenuItem value="review">👀 Review</MenuItem>
+            <MenuItem value="done">✅ Done</MenuItem>
+          </Select>
+        </FormControl>
+
+        <FormControl fullWidth sx={{ mb: 2 }}>
+          <InputLabel>Priority</InputLabel>
+          <Select
+            value={form.priority}
+            label="Priority"
+            onChange={(e) => handleChange("priority", e.target.value)}
+          >
+            <MenuItem value="High">⚡ High</MenuItem>
+            <MenuItem value="Medium">📊 Medium</MenuItem>
+            <MenuItem value="Low">🐢 Low</MenuItem>
+          </Select>
+        </FormControl>
+
+        <DatePicker
+          label="📅 Deadline"
+          value={form.deadline}
+          onChange={(newDate) => handleChange("deadline", newDate)}
+          slotProps={{ textField: { fullWidth: true, sx: { mb: 2 } } }}
+        />
 
         <FormControl fullWidth sx={{ mb: 2 }}>
           <InputLabel>Assignees</InputLabel>
@@ -180,7 +229,27 @@ const AddTaskModal = ({ open, onClose, onTaskAdded, listId, projectId }) => {
           </Select>
         </FormControl>
 
-        {/* ... resto igual ... */}
+        <TextField
+          label="🏷️ Tags (comma separated)"
+          fullWidth
+          value={form.tags.join(", ")}
+          onChange={(e) =>
+            handleChange(
+              "tags",
+              e.target.value.split(",").map((tag) => tag.trim())
+            )
+          }
+          sx={{ mb: 2 }}
+        />
+
+        <Box sx={{ display: "flex", justifyContent: "flex-end", gap: 1 }}>
+          <Button variant="outlined" onClick={onClose}>
+            ❌ Cancel
+          </Button>
+          <Button variant="contained" onClick={handleSubmit}>
+            ✅ Create
+          </Button>
+        </Box>
       </Box>
     </Modal>
   );
