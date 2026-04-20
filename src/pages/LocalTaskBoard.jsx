@@ -204,9 +204,11 @@ const LocalTaskBoard = () => {
     );
 
     const mergedTask = {
-      ...selectedTask,   
-      ...updatedTask,    
-    };
+    ...selectedTask,
+    ...updatedTask,
+    assignees: updatedTask.assignees ?? selectedTask.assignees,
+    assignedTo: updatedTask.assignedTo ?? selectedTask.assignedTo,
+  };
 
     setAllTasks((prev) =>
       prev.map((t) => (t._id === selectedTask._id ? mergedTask : t))

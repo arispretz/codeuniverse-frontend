@@ -8,19 +8,25 @@
  * @param {string|null} currentFirebaseUid - User's Firebase UID.
  * @returns {boolean} True if the user is assigned, false otherwise.
  */
+
 export const isUserAssigned = (task, currentUserMongoId, currentFirebaseUid) => {
   if (!task) return false;
 
   const mongoId = currentUserMongoId ? String(currentUserMongoId) : "";
   const firebaseUid = currentFirebaseUid ? String(currentFirebaseUid) : "";
 
-  // 🔹 Case 1: Multiple assignees (array of IDs or populated users)
+  if (task.assignedTo) {
+    const assignedId = typeof task.assignedTo === "string"
+      ? task.assignedTo
+      : String(task.assignedTo?._id || "");
+    const assignedUid = task.assignedTo?.uid ? String(task.assignedTo.uid) : "";
+    if (assignedId === mongoId || assignedUid === firebaseUid) return true;
+  }
+
   if (Array.isArray(task.assignees)) {
     return task.assignees.some((a) => {
-      // Puede ser un string (por toJSON) o un objeto con _id
       const assigneeId = typeof a === "string" ? a : String(a?._id || "");
       const assigneeUid = a?.uid ? String(a.uid) : "";
-
       return assigneeId === mongoId || assigneeUid === firebaseUid;
     });
   }

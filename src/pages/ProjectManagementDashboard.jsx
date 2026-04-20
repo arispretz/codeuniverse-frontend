@@ -407,20 +407,12 @@ const ProjectManagementDashboard = () => {
                               color="info"
                               size="small"
                             />
-                            <IconButton
-                              edge="end"
-                              color="primary"
-                              onClick={() => handleView(task)}
-                            >
+                            <IconButton edge="end" color="primary" onClick={() => handleView(task)}>
                               <VisibilityIcon />
                             </IconButton>
                             {canEditOrDelete(task) && (
                               <>
-                                <IconButton
-                                  edge="end"
-                                  color="secondary"
-                                  onClick={() => handleEdit(task)}
-                                >
+                                <IconButton edge="end" color="secondary" onClick={() => handleEdit(task)}>
                                   <EditIcon />
                                 </IconButton>
                                 <IconButton
@@ -440,7 +432,20 @@ const ProjectManagementDashboard = () => {
                       >
                         <ListItemText
                           primary={task.title}
-                          secondary={task.description}
+                          secondary={
+                            <Typography
+                              variant="body2"
+                              sx={{
+                                display: "-webkit-box",
+                                WebkitLineClamp: 2,   // máximo 2 líneas
+                                WebkitBoxOrient: "vertical",
+                                overflow: "hidden",
+                                textOverflow: "ellipsis",
+                              }}
+                            >
+                              {task.description}
+                            </Typography>
+                          }
                         />
                       </ListItem>
                     ))}
@@ -475,20 +480,12 @@ const ProjectManagementDashboard = () => {
                               color="info"
                               size="small"
                             />
-                            <IconButton
-                              edge="end"
-                              color="primary"
-                              onClick={() => handleView(task)}
-                            >
+                            <IconButton edge="end" color="primary" onClick={() => handleView(task)}>
                               <VisibilityIcon />
                             </IconButton>
                             {canEditOrDelete(task) && (
                               <>
-                                <IconButton
-                                  edge="end"
-                                  color="secondary"
-                                  onClick={() => handleEdit(task)}
-                                >
+                                <IconButton edge="end" color="secondary" onClick={() => handleEdit(task)}>
                                   <EditIcon />
                                 </IconButton>
                                 <IconButton
@@ -508,7 +505,20 @@ const ProjectManagementDashboard = () => {
                       >
                         <ListItemText
                           primary={task.title}
-                          secondary={task.description}
+                          secondary={
+                            <Typography
+                              variant="body2"
+                              sx={{
+                                display: "-webkit-box",
+                                WebkitLineClamp: 2,
+                                WebkitBoxOrient: "vertical",
+                                overflow: "hidden",
+                                textOverflow: "ellipsis",
+                              }}
+                            >
+                              {task.description}
+                            </Typography>
+                          }
                         />
                       </ListItem>
                     ))}
