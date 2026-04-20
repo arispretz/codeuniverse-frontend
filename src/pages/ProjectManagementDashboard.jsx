@@ -149,14 +149,28 @@ const ProjectManagementDashboard = () => {
 
   const handleUpdate = async () => {
   try {
+    const payload = {
+      ...form,
+      assignees: (form.assignees || []).map((id) =>
+        typeof id === "object" && id._id ? id._id : id
+      ),
+    };
+
     const updatedTask = await updateLocalTask(
       selectedListId,
       selectedTask._id,
-      form
+      payload
     );
 
+    const normalizedTask = {
+      ...updatedTask,
+      assignees: (updatedTask.assignees || []).map((a) =>
+        typeof a === "object" && a._id ? a._id : a
+      ),
+    };
+
     setAllTasks((prev) =>
-      prev.map((t) => (t._id === selectedTask._id ? updatedTask : t))
+      prev.map((t) => (t._id === selectedTask._id ? normalizedTask : t))
     );
 
     setProjects((prev) =>
@@ -169,7 +183,7 @@ const ProjectManagementDashboard = () => {
                   ? {
                       ...list,
                       tasks: list.tasks.map((t) =>
-                        t._id === selectedTask._id ? updatedTask : t
+                        t._id === selectedTask._id ? normalizedTask : t
                       ),
                     }
                   : list
@@ -183,7 +197,6 @@ const ProjectManagementDashboard = () => {
     setSelectedTask(null);
     showSnackbar("Task updated successfully ✅", "success");
     window.dispatchEvent(new Event("tasksUpdated"));
-
   } catch {
     showSnackbar("Error updating local task ❌", "error");
   }
