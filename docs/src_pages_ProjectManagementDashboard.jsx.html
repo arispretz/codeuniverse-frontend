@@ -426,25 +426,9 @@ const ProjectManagementDashboard = () => {
                       ➕ Add Kanban Task
                     &lt;/Button>
                     {list.tasks?.map((task) => (
-                      &lt;ListItem key={task._id}>
-                        &lt;ListItemText
-                          primary={task.title}
-                          secondary={
-                            &lt;Typography
-                              variant="body2"
-                              sx={{
-                                display: "-webkit-box",
-                                WebkitLineClamp: 2,   // máximo 2 líneas
-                                WebkitBoxOrient: "vertical",
-                                overflow: "hidden",
-                                textOverflow: "ellipsis",
-                              }}
-                            >
-                              {task.description}
-                            &lt;/Typography>
-                          }
-                        />
-                        &lt;ListItemSecondaryAction>
+                      &lt;ListItem
+                        key={task._id}
+                        secondaryAction={
                           &lt;Box sx={{ display: "flex", alignItems: "center", gap: 1 }}>
                             &lt;Chip label={task.status || "Pending"} color="info" size="small" />
                             &lt;IconButton edge="end" color="primary" onClick={() => handleView(task)}>
@@ -468,7 +452,21 @@ const ProjectManagementDashboard = () => {
                               &lt;/>
                             )}
                           &lt;/Box>
-                        &lt;/ListItemSecondaryAction>
+                        }
+                      >
+                        &lt;ListItemText
+                          primary={task.title}
+                          secondary={task.description}
+                          sx={{
+                            pr: 8, 
+                            display: "-webkit-box",
+                            overflow: "hidden",
+                            textOverflow: "ellipsis",
+                            WebkitBoxOrient: "vertical",
+                            WebkitLineClamp: 2,
+                            maxWidth: "calc(100% - 120px)", 
+                          }}
+                        />
                       &lt;/ListItem>
                     ))}
                   &lt;/Box>
@@ -493,25 +491,9 @@ const ProjectManagementDashboard = () => {
                       ➕ Add Local Task
                     &lt;/Button>
                     {list.tasks?.map((task) => (
-                      &lt;ListItem key={task._id}>
-                        &lt;ListItemText
-                          primary={task.title}
-                          secondary={
-                            &lt;Typography
-                              variant="body2"
-                              sx={{
-                                display: "-webkit-box",
-                                WebkitLineClamp: 2,
-                                WebkitBoxOrient: "vertical",
-                                overflow: "hidden",
-                                textOverflow: "ellipsis",
-                              }}
-                            >
-                              {task.description}
-                            &lt;/Typography>
-                          }
-                        />
-                        &lt;ListItemSecondaryAction>
+                      &lt;ListItem
+                        key={task._id}
+                        secondaryAction={
                           &lt;Box sx={{ display: "flex", alignItems: "center", gap: 1 }}>
                             &lt;Chip label={task.status || "Pending"} color="info" size="small" />
                             &lt;IconButton edge="end" color="primary" onClick={() => handleView(task)}>
@@ -535,7 +517,21 @@ const ProjectManagementDashboard = () => {
                               &lt;/>
                             )}
                           &lt;/Box>
-                        &lt;/ListItemSecondaryAction>
+                        }
+                      >
+                        &lt;ListItemText
+                          primary={task.title}
+                          secondary={task.description}
+                          sx={{
+                            pr: 8,
+                            display: "-webkit-box",
+                            overflow: "hidden",
+                            textOverflow: "ellipsis",
+                            WebkitBoxOrient: "vertical",
+                            WebkitLineClamp: 2,
+                            maxWidth: "calc(100% - 120px)",
+                          }}
+                        />
                       &lt;/ListItem>
                     ))}
                   &lt;/Box>
@@ -736,7 +732,7 @@ export default ProjectManagementDashboard;
 <br class="clear">
 
 <footer>
-    Documentation generated by <a href="https://github.com/jsdoc/jsdoc">JSDoc 4.0.5</a> on Mon Apr 20 2026 04:44:23 GMT-0300 (Argentina Standard Time)
+    Documentation generated by <a href="https://github.com/jsdoc/jsdoc">JSDoc 4.0.5</a> on Mon Apr 20 2026 04:59:13 GMT-0300 (Argentina Standard Time)
 </footer>
 
 <script> prettyPrint(); </script>

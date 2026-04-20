@@ -398,25 +398,9 @@ const ProjectManagementDashboard = () => {
                       ➕ Add Kanban Task
                     </Button>
                     {list.tasks?.map((task) => (
-                      <ListItem key={task._id}>
-                        <ListItemText
-                          primary={task.title}
-                          secondary={
-                            <Typography
-                              variant="body2"
-                              sx={{
-                                display: "-webkit-box",
-                                WebkitLineClamp: 2,   // máximo 2 líneas
-                                WebkitBoxOrient: "vertical",
-                                overflow: "hidden",
-                                textOverflow: "ellipsis",
-                              }}
-                            >
-                              {task.description}
-                            </Typography>
-                          }
-                        />
-                        <ListItemSecondaryAction>
+                      <ListItem
+                        key={task._id}
+                        secondaryAction={
                           <Box sx={{ display: "flex", alignItems: "center", gap: 1 }}>
                             <Chip label={task.status || "Pending"} color="info" size="small" />
                             <IconButton edge="end" color="primary" onClick={() => handleView(task)}>
@@ -440,7 +424,21 @@ const ProjectManagementDashboard = () => {
                               </>
                             )}
                           </Box>
-                        </ListItemSecondaryAction>
+                        }
+                      >
+                        <ListItemText
+                          primary={task.title}
+                          secondary={task.description}
+                          sx={{
+                            pr: 8, 
+                            display: "-webkit-box",
+                            overflow: "hidden",
+                            textOverflow: "ellipsis",
+                            WebkitBoxOrient: "vertical",
+                            WebkitLineClamp: 2,
+                            maxWidth: "calc(100% - 120px)", 
+                          }}
+                        />
                       </ListItem>
                     ))}
                   </Box>
@@ -465,25 +463,9 @@ const ProjectManagementDashboard = () => {
                       ➕ Add Local Task
                     </Button>
                     {list.tasks?.map((task) => (
-                      <ListItem key={task._id}>
-                        <ListItemText
-                          primary={task.title}
-                          secondary={
-                            <Typography
-                              variant="body2"
-                              sx={{
-                                display: "-webkit-box",
-                                WebkitLineClamp: 2,
-                                WebkitBoxOrient: "vertical",
-                                overflow: "hidden",
-                                textOverflow: "ellipsis",
-                              }}
-                            >
-                              {task.description}
-                            </Typography>
-                          }
-                        />
-                        <ListItemSecondaryAction>
+                      <ListItem
+                        key={task._id}
+                        secondaryAction={
                           <Box sx={{ display: "flex", alignItems: "center", gap: 1 }}>
                             <Chip label={task.status || "Pending"} color="info" size="small" />
                             <IconButton edge="end" color="primary" onClick={() => handleView(task)}>
@@ -507,7 +489,21 @@ const ProjectManagementDashboard = () => {
                               </>
                             )}
                           </Box>
-                        </ListItemSecondaryAction>
+                        }
+                      >
+                        <ListItemText
+                          primary={task.title}
+                          secondary={task.description}
+                          sx={{
+                            pr: 8,
+                            display: "-webkit-box",
+                            overflow: "hidden",
+                            textOverflow: "ellipsis",
+                            WebkitBoxOrient: "vertical",
+                            WebkitLineClamp: 2,
+                            maxWidth: "calc(100% - 120px)",
+                          }}
+                        />
                       </ListItem>
                     ))}
                   </Box>
