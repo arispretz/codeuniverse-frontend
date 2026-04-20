@@ -195,25 +195,51 @@ const LocalTaskBoard = () => {
     setOpenEdit(true);
   };
 
-  const handleUpdate = async () => {
+  const handleUpdate = async (payloadFromModal) => {
   try {
     const updatedTask = await updateLocalTask(
       selectedListId,
       selectedTask._id,
-      form
+      payloadFromModal
     );
 
+    const normalizedTask = {
+      ...updatedTask,
+      assignees: (updatedTask.assignees || []).map((a) =>
+        typeof a === "object" && a._id ? a._id : a
+      ),
+    };
+
     setAllTasks((prev) =>
-      prev.map((t) => (t._id === updatedTask._id ? updatedTask : t))
+      prev.map((t) => (t._id === selectedTask._id ? normalizedTask : t))
+    );
+
+    setProjects((prev) =>
+      prev.map((proj) =>
+        proj._id === selectedProject
+          ? {
+              ...proj,
+              localLists: proj.localLists.map((list) =>
+                list._id === selectedListId
+                  ? {
+                      ...list,
+                      tasks: list.tasks.map((t) =>
+                        t._id === selectedTask._id ? normalizedTask : t
+                      ),
+                    }
+                  : list
+              ),
+            }
+          : proj
+      )
     );
 
     setOpenEdit(false);
     setSelectedTask(null);
-    enqueueSnackbar("Task updated successfully ✅", { variant: "success" });
-
+    showSnackbar("Task updated successfully ✅", "success");
     window.dispatchEvent(new Event("tasksUpdated"));
   } catch {
-    enqueueSnackbar("Error updating local task ❌", { variant: "error" });
+    showSnackbar("Error updating local task ❌", "error");
   }
 };
 
