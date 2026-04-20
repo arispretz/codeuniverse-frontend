@@ -183,17 +183,18 @@ const LocalTaskBoard = () => {
   
   // Handlers
   const handleEdit = (task) => {
-    setSelectedTask(task);
-    setForm({
-      title: task.title,
-      description: task.description,
-      priority: task.priority || "",
-      status: task.status || "todo",
-      deadline: task.deadline || "",
-    });
-    setSelectedListId(task.listId); 
-    setOpenEdit(true);
-  };
+  setSelectedTask(task);
+  setForm({
+    title: task.title,
+    description: task.description,
+    priority: task.priority || "",
+    status: task.status || "todo",
+    deadline: task.deadline || "",
+    originalAssignees: task.assignees || [], 
+  });
+  setSelectedListId(task.listId);
+  setOpenEdit(true);
+};
 
   const handleUpdate = async (payloadFromModal) => {
   try {

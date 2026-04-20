@@ -29,24 +29,27 @@ const EditLocalTaskModal = ({ open, onClose, form, setForm, handleUpdate }) => {
   };
 
   const handleSave = () => {
-    if (!form.title?.trim() || !form.description?.trim()) {
-      console.error("⚠️ Title and description are required.");
-      return;
-    }
+  if (!form.title?.trim() || !form.description?.trim()) {
+    console.error("⚠️ Title and description are required.");
+    return;
+  }
 
-    const payload = {
-      ...form,
-      status: denormalizeStatus(form.status),
-      deadline: form.deadline ? new Date(form.deadline).toISOString() : null,
-      assignedTo: form.assignedTo?._id || form.assignedTo || null,
-      assignees: (form.assignees || []).map((id) =>
-        typeof id === "object" && id._id ? id._id : id
-      ),
-      source: "local",
-    };
-
-    handleUpdate(payload);
+  const payload = {
+    ...form,
+    status: denormalizeStatus(form.status),
+    deadline: form.deadline ? new Date(form.deadline).toISOString() : null,
+    assignedTo: form.assignedTo?._id || form.assignedTo || null,
+    assignees:
+      form.assignees && form.assignees.length > 0
+        ? form.assignees.map((id) =>
+            typeof id === "object" && id._id ? id._id : id
+          )
+        : (form.originalAssignees || []), 
+    source: "local",
   };
+
+  handleUpdate(payload);
+};
 
   return (
     <Modal open={open} onClose={onClose}>
