@@ -447,7 +447,6 @@ const handleNewComment = (newComment) => {
   enqueueSnackbar("Comment added 💬", { variant: "success" });
 };
 
-
   // --- Render ---
   return (
     <Box sx={{ bgcolor: theme.palette.background.default, minHeight: "100vh", p: 2 }}>

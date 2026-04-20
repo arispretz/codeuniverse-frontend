@@ -203,15 +203,8 @@ const LocalTaskBoard = () => {
       form
     );
 
-    const mergedTask = {
-    ...selectedTask,
-    ...updatedTask,
-    assignees: updatedTask.assignees ?? selectedTask.assignees,
-    assignedTo: updatedTask.assignedTo ?? selectedTask.assignedTo,
-  };
-
     setAllTasks((prev) =>
-      prev.map((t) => (t._id === selectedTask._id ? mergedTask : t))
+      prev.map((t) => (t._id === updatedTask._id ? updatedTask : t))
     );
 
     setOpenEdit(false);
@@ -224,12 +217,12 @@ const LocalTaskBoard = () => {
   }
 };
 
-  const handleView = (task) => {
-    setSelectedTask(task);
-    setOpenView(true);
-  };
+const handleView = (task) => {
+  setSelectedTask(task);
+  setOpenView(true);
+};
 
-  const handleDelete = async () => {
+const handleDelete = async () => {
   try {
     await deleteLocalTask(selectedTask._id);
 
