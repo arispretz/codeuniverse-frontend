@@ -196,7 +196,7 @@ const LocalTaskBoard = () => {
   setOpenEdit(true);
 };
 
-  const handleUpdate = async (payloadFromModal) => {
+const handleUpdate = async (payloadFromModal) => {
   try {
     const updatedTask = await updateLocalTask(
       selectedListId,
@@ -205,8 +205,9 @@ const LocalTaskBoard = () => {
     );
 
     const normalizedTask = {
-      ...updatedTask,
-      assignees: (updatedTask.assignees || []).map((a) =>
+      ...selectedTask,          
+      ...updatedTask,           
+      assignees: (updatedTask.assignees || selectedTask.assignees || []).map((a) =>
         typeof a === "object" && a._id ? a._id : a
       ),
     };

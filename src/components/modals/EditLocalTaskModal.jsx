@@ -35,16 +35,15 @@ const EditLocalTaskModal = ({ open, onClose, form, setForm, handleUpdate }) => {
   }
 
   const payload = {
-    ...form,
-    status: denormalizeStatus(form.status),
+    title: form.title,
+    description: form.description,
+    status: denormalizeStatus(form.status), 
+    priority: form.priority,
     deadline: form.deadline ? new Date(form.deadline).toISOString() : null,
-    assignedTo: form.assignedTo?._id || form.assignedTo || null,
-    assignees:
-      form.assignees && form.assignees.length > 0
-        ? form.assignees.map((id) =>
-            typeof id === "object" && id._id ? id._id : id
-          )
-        : (form.originalAssignees || []), 
+    tags: form.tags || [],
+    assignees: (form.assignees || []).map((id) =>
+      typeof id === "object" && id._id ? id._id : id
+    ),
     source: "local",
   };
 
