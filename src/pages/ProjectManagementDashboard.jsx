@@ -183,7 +183,6 @@ const ProjectManagementDashboard = () => {
     setSelectedTask(null);
     showSnackbar("Task updated successfully ✅", "success");
 
-    window.dispatchEvent(new Event("tasksUpdated"));
   } catch {
     showSnackbar("Error updating local task ❌", "error");
   }
@@ -220,7 +219,6 @@ const ProjectManagementDashboard = () => {
 
     showSnackbar("Task deleted ✅", "success");
 
-    window.dispatchEvent(new Event("tasksUpdated"));
   } catch {
     showSnackbar("Error deleting local task ❌", "error");
   } finally {
