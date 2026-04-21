@@ -23,32 +23,35 @@ import CloseIcon from "@mui/icons-material/Close";
 import { DatePicker } from "@mui/x-date-pickers";
 import { denormalizeStatus } from "../KanbanUtils.jsx";
 
-const EditLocalTaskModal = ({ open, onClose, form, setForm, handleUpdate }) => {
+const EditLocalTaskModal = ({ open, onClose, form, setForm, handleUpdate, selectedTask }) => {
   const handleChange = (field, value) => {
     setForm((prev) => ({ ...prev, [field]: value }));
   };
 
   const handleSave = () => {
-  if (!form.title?.trim() || !form.description?.trim()) {
-    console.error("⚠️ Title and description are required.");
-    return;
-  }
+    if (!form.title?.trim() || !form.description?.trim()) {
+      console.error("⚠️ Title and description are required.");
+      return;
+    }
 
-  const payload = {
-    title: form.title,
-    description: form.description,
-    status: denormalizeStatus(form.status), 
-    priority: form.priority,
-    deadline: form.deadline ? new Date(form.deadline).toISOString() : null,
-    tags: form.tags || [],
-    assignees: (form.assignees || []).map((id) =>
-      typeof id === "object" && id._id ? id._id : id
-    ),
-    source: "local",
+    const payload = {
+      title: form.title,
+      description: form.description,
+      status: denormalizeStatus(form.status || selectedTask.status),
+      priority: form.priority || selectedTask.priority,
+      deadline: form.deadline
+        ? new Date(form.deadline).toISOString()
+        : selectedTask.deadline || null,
+      tags: form.tags || selectedTask.tags || [],
+      assignees: (form.assignees?.length
+        ? form.assignees
+        : selectedTask.assignees || []
+      ).map((id) => (typeof id === "object" && id._id ? id._id : id)),
+      source: "local",
+    };
+
+    handleUpdate(payload);
   };
-
-  handleUpdate(payload);
-};
 
   return (
     <Modal open={open} onClose={onClose}>

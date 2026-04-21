@@ -205,11 +205,12 @@ const handleUpdate = async (payloadFromModal) => {
     );
 
     const normalizedTask = {
-      ...selectedTask,          
-      ...updatedTask,           
-      assignees: (updatedTask.assignees || selectedTask.assignees || []).map((a) =>
-        typeof a === "object" && a._id ? a._id : a
-      ),
+      ...selectedTask,   
+      ...updatedTask,    
+      assignees: (updatedTask.assignees?.length
+        ? updatedTask.assignees
+        : selectedTask.assignees || []
+      ).map((a) => (typeof a === "object" && a._id ? a._id : a)),
     };
 
     setAllTasks((prev) =>
