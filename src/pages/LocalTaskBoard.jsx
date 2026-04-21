@@ -238,10 +238,10 @@ const handleUpdate = async (payloadFromModal) => {
 
     setOpenEdit(false);
     setSelectedTask(null);
-    enqueueSnackbar("Task updated successfully ✅", "success");
+    enqueueSnackbar("Task updated successfully ✅", { variant: "success" });
     window.dispatchEvent(new Event("tasksUpdated"));
   } catch {
-    enqueueSnackbar("Error updating local task ❌", "error");
+    enqueueSnackbar("Error updating local task ❌", { variant: "error" });
   }
 };
 
