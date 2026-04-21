@@ -56,7 +56,7 @@ const getSidebarItems = (role) => {
     { label: "Personal Tasks", to: "personal-tasks", icon: <Assignment />, roles: ["admin","developer"] },
     { label: "Collaborative Code Editor", to: "editor", icon: <Assignment />, roles: ["admin", "manager", "developer"] },
     { label: "Team Chat", to: "team-chat", icon: <People />, roles: ["admin","manager","developer"] },
-    { label: "Code Review Panel", to: "code-review", icon: <Code />, roles: ["admin","developer"] },
+    { label: "Code Review Panel", to: "code-review", icon: <Code />, roles: ["admin",'manager',"developer"] },
     { label: "Project Documentation", to: "project-docs", icon: <Code />, roles: ["admin","manager","developer"] },
 
     // Admin-only routes
