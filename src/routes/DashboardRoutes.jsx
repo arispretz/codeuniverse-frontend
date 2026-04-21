@@ -142,7 +142,7 @@ export const DashboardRoutes = [
       {
         path: 'editor',
         element: (
-          <ProtectedRoute allowedRoles={['admin','developer']}>
+          <ProtectedRoute allowedRoles={['admin', 'manager', 'developer']}>
             <ProjectSelector />
           </ProtectedRoute>
         ),
