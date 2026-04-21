@@ -28,7 +28,7 @@ const EditLocalTaskModal = ({ open, onClose, form, setForm, handleUpdate, select
     setForm((prev) => ({ ...prev, [field]: value }));
   };
 
-  const handleSave = () => {
+ /* const handleSave = () => {
     if (!form.title?.trim() || !form.description?.trim()) {
       console.error("⚠️ Title and description are required.");
       return;
@@ -52,6 +52,29 @@ const EditLocalTaskModal = ({ open, onClose, form, setForm, handleUpdate, select
 
     handleUpdate(payload);
   };
+  */
+ const handleSave = () => {
+  if (!form.title?.trim() || !form.description?.trim()) {
+    console.error("⚠️ Title and description are required.");
+    return;
+  }
+
+  const payload = {
+    title: form.title,
+    description: form.description,
+    status: denormalizeStatus(form.status), 
+    priority: form.priority,
+    deadline: form.deadline ? new Date(form.deadline).toISOString() : null,
+    tags: form.tags || [],
+    assignees: (form.assignees || []).map((id) =>
+      typeof id === "object" && id._id ? id._id : id
+    ),
+    source: "local",
+  };
+
+  handleUpdate(payload);
+};
+
 
   return (
     <Modal open={open} onClose={onClose}>

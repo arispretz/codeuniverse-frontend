@@ -196,6 +196,7 @@ const LocalTaskBoard = () => {
   setOpenEdit(true);
 };
 
+/*
 const handleUpdate = async (payloadFromModal) => {
   try {
     const updatedTask = await updateLocalTask(
@@ -243,6 +244,56 @@ const handleUpdate = async (payloadFromModal) => {
     window.dispatchEvent(new Event("tasksUpdated"));
   } catch {
     enqueueSnackbar("Error updating local task ❌", { variant: "error" });
+  }
+};
+*/
+const handleUpdate = async (payload) => {
+  try {
+    const updatedTask = await updateLocalTask(
+      selectedListId,
+      selectedTask._id,
+      payload
+    );
+
+    const normalizedTask = {
+      ...selectedTask,
+      ...updatedTask,
+      assignees: (updatedTask.assignees || selectedTask.assignees || []).map((a) =>
+        typeof a === "object" && a._id ? a._id : a
+      ),
+    };
+
+    setAllTasks((prev) =>
+      prev.map((t) => (t._id === selectedTask._id ? normalizedTask : t))
+    );
+
+    setProjects((prev) =>
+      prev.map((proj) =>
+        proj._id === selectedProject
+          ? {
+              ...proj,
+              localLists: proj.localLists.map((list) =>
+                list._id === selectedListId
+                  ? {
+                      ...list,
+                      tasks: list.tasks.map((t) =>
+                        t._id === selectedTask._id ? normalizedTask : t
+                      ),
+                    }
+                  : list
+              ),
+            }
+          : proj
+      )
+    );
+
+    setOpenEdit(false);
+    setSelectedTask(null);
+    enqueueSnackbar("Task updated successfully ✅", { variant: "success" });
+    window.dispatchEvent(new Event("tasksUpdated"));
+  } catch {
+    enqueueSnackbar("Error updating local task ❌", { variant: "error" });
+
   }
 };
 
