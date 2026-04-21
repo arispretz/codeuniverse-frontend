@@ -54,7 +54,7 @@ const getSidebarItems = (role) => {
     { label: "Kanban Board", to: "kanban", icon: <Assignment />, roles: ["admin","manager","developer"] },
     { label: "Local Task Board", to: "local-task-board", icon: <Assignment />, roles: ["admin","manager","developer"] },
     { label: "Personal Tasks", to: "personal-tasks", icon: <Assignment />, roles: ["admin","developer"] },
-    { label: "Collaborative Code Editor", to: "editor", icon: <Assignment />, roles: ["admin","developer"] },
+    { label: "Collaborative Code Editor", to: "editor", icon: <Assignment />, roles: ["admin", "manager", "developer"] },
     { label: "Team Chat", to: "team-chat", icon: <People />, roles: ["admin","manager","developer"] },
     { label: "Code Review Panel", to: "code-review", icon: <Code />, roles: ["admin","developer"] },
     { label: "Project Documentation", to: "project-docs", icon: <Code />, roles: ["admin","manager","developer"] },
