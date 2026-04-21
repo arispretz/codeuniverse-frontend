@@ -187,14 +187,15 @@ const LocalTaskBoard = () => {
   const handleEdit = (task) => {
   setSelectedTask(task);
   setForm({
-    title: task.title,
-    description: task.description,
-    priority: task.priority || "",
+    title: task.title || "",
+    description: task.description || "",
+    priority: task.priority || "medium",
     status: task.status || "todo",
-    deadline: task.deadline || "",
-    originalAssignees: task.assignees || [], 
+    deadline: task.deadline || null,
+    tags: task.tags || [],              
+    assignees: task.assignees || [],    
   });
-  setSelectedListId(task.listId);
+  setSelectedListId(task.listId || "");
   setOpenEdit(true);
 };
 
@@ -207,8 +208,8 @@ const handleUpdate = async (payloadFromModal) => {
     );
 
     const normalizedTask = {
-      ...selectedTask,   
-      ...updatedTask,    
+      ...selectedTask,
+      ...updatedTask,
       assignees: (updatedTask.assignees?.length
         ? updatedTask.assignees
         : selectedTask.assignees || []
@@ -221,7 +222,7 @@ const handleUpdate = async (payloadFromModal) => {
 
     setProjects((prev) =>
       prev.map((proj) =>
-        proj._id === selectedProject
+        proj._id === projectId
           ? {
               ...proj,
               localLists: proj.localLists.map((list) =>
