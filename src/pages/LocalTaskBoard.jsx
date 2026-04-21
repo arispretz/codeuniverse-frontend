@@ -73,12 +73,14 @@ const LocalTaskBoard = () => {
 
   // Edit form
   const [form, setForm] = useState({
-    title: "",
-    description: "",
-    priority: "",
-    status: "todo",
-    deadline: "",
-  });
+  title: "",
+  description: "",
+  status: "todo",
+  priority: "medium",
+  deadline: null,
+  tags: [],
+  assignees: []
+});
 
   const [loading, setLoading] = useState(false);
 

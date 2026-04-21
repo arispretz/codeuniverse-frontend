@@ -29,29 +29,29 @@ const EditLocalTaskModal = ({ open, onClose, form, setForm, handleUpdate, select
   };
 
   const handleSave = () => {
-    if (!form.title?.trim() || !form.description?.trim()) {
-      console.error("⚠️ Title and description are required.");
-      return;
-    }
+  if (!form?.title?.trim() || !form?.description?.trim()) {
+    console.error("⚠️ Title and description are required.");
+    return;
+  }
 
-    const payload = {
-      title: form.title,
-      description: form.description,
-      status: denormalizeStatus(form.status || selectedTask.status),
-      priority: form.priority || selectedTask.priority,
-      deadline: form.deadline
-        ? new Date(form.deadline).toISOString()
-        : selectedTask.deadline || null,
-      tags: form.tags || selectedTask.tags || [],
-      assignees: (form.assignees?.length
-        ? form.assignees
-        : selectedTask.assignees || []
-      ).map((id) => (typeof id === "object" && id._id ? id._id : id)),
-      source: "local",
-    };
-
-    handleUpdate(payload);
+  const payload = {
+    title: form?.title ?? selectedTask?.title ?? "",
+    description: form?.description ?? selectedTask?.description ?? "",
+    status: denormalizeStatus(form?.status ?? selectedTask?.status ?? "todo"),
+    priority: form?.priority ?? selectedTask?.priority ?? "medium",
+    deadline: form?.deadline
+      ? new Date(form.deadline).toISOString()
+      : selectedTask?.deadline ?? null,
+    tags: form?.tags ?? selectedTask?.tags ?? [],
+    assignees: (form?.assignees?.length
+      ? form.assignees
+      : selectedTask?.assignees ?? []
+    ).map((id) => (typeof id === "object" && id._id ? id._id : id)),
+    source: "local",
   };
+
+  handleUpdate(payload);
+};
 
   return (
     <Modal open={open} onClose={onClose}>
